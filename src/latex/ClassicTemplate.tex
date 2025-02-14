@@ -1,0 +1,62 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{fontawesome}
+\usepackage[sfdefault]{roboto}
+\usepackage{color}
+\usepackage{enumitem}
+
+% Define colors
+\definecolor{headerColor}{RGB}{26, 54, 93}
+\definecolor{subheaderColor}{RGB}{33, 42, 62}
+
+% Configure page margins
+\usepackage[margin=0.5in]{geometry}
+
+% Configure section formatting
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{12pt}{8pt}
+
+% Configure subsection formatting
+\titleformat{\subsection}{\large\bfseries\raggedright}{}{0em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+
+\begin{document}
+
+% Header
+\begin{center}
+    {\Huge\textbf{John Smith}}\\[4pt]
+    {\large Senior Software Engineer}\\[4pt]
+    \textcolor{subheaderColor}{
+        \faEnvelope\ john@email.com \quad
+        \faPhone\ (555) 123-4567 \quad
+        \faMapMarker\ San Francisco, CA
+    }
+\end{center}
+
+% Experience Section
+\section{Experience}
+\subsection*{Tech Company, Inc.}
+\textit{Senior Software Engineer} \hfill 2020 - Present\\
+\begin{itemize}[leftmargin=*]
+    \item Led development of key features resulting in 40\% user growth
+\end{itemize}
+
+\subsection*{Startup Co.}
+\textit{Software Engineer} \hfill 2018 - 2020\\
+\begin{itemize}[leftmargin=*]
+    \item Developed and maintained core application features
+\end{itemize}
+
+% Skills Section
+\section{Skills}
+JavaScript • React • Node.js • Python • SQL • AWS
+
+% Education Section
+\section{Education}
+\subsection*{University of Technology}
+\textbf{Bachelor of Science in Computer Science} \hfill 2018
+
+\end{document} 
