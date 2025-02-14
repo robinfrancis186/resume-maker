@@ -10,17 +10,21 @@ import {
   useToast,
   HStack,
   Textarea,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateExperience } from '../../store/resumeSlice';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaMagic } from 'react-icons/fa';
 import { useState } from 'react';
+import AIContentGenerator from '../common/AIContentGenerator';
 
 const ExperienceForm = () => {
   const dispatch = useDispatch();
   const toast = useToast();
   const experience = useSelector((state) => state.resume.experience);
   const [entries, setEntries] = useState(experience.length > 0 ? experience : [{}]);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleAddEntry = () => {
     setEntries([...entries, {}]);
@@ -47,6 +51,17 @@ const ExperienceForm = () => {
       duration: 2000,
       isClosable: true,
     });
+  };
+
+  const handleGenerateContent = (index) => {
+    setSelectedIndex(index);
+    onOpen();
+  };
+
+  const handleAIGenerated = (content) => {
+    if (selectedIndex !== null) {
+      handleChange(selectedIndex, 'description', content);
+    }
   };
 
   return (
@@ -120,7 +135,17 @@ const ExperienceForm = () => {
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Description</FormLabel>
+                <HStack justify="space-between" align="center">
+                  <FormLabel mb={0}>Description</FormLabel>
+                  <Button
+                    size="sm"
+                    leftIcon={<FaMagic />}
+                    variant="outline"
+                    onClick={() => handleGenerateContent(index)}
+                  >
+                    Generate with AI
+                  </Button>
+                </HStack>
                 <Textarea
                   value={entry.description || ''}
                   onChange={(e) => handleChange(index, 'description', e.target.value)}
@@ -137,16 +162,23 @@ const ExperienceForm = () => {
         <Button
           leftIcon={<FaPlus />}
           onClick={handleAddEntry}
-          colorScheme="purple"
           variant="ghost"
         >
           Add Experience
         </Button>
 
-        <Button type="submit" colorScheme="purple">
+        <Button type="submit">
           Save Experience
         </Button>
       </VStack>
+
+      <AIContentGenerator
+        isOpen={isOpen}
+        onClose={onClose}
+        onGenerated={handleAIGenerated}
+        type="experience"
+        placeholder="Describe your role, responsibilities, and achievements. For example: Led a team of software engineers at Google, working on the Chrome browser's performance optimization..."
+      />
     </form>
   );
 };

@@ -1,7 +1,8 @@
 import { ChakraProvider, CSSReset } from '@chakra-ui/react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
+import theme from './theme';
 
 // Import pages (we'll create these next)
 import Home from './pages/Home';
@@ -11,7 +12,7 @@ import Templates from './pages/Templates';
 function App() {
   return (
     <Provider store={store}>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <CSSReset />
         <Router>
           <Routes>

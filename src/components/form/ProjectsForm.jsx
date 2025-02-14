@@ -15,11 +15,13 @@ import {
   TagCloseButton,
   Wrap,
   WrapItem,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProjects } from '../../store/resumeSlice';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaMagic } from 'react-icons/fa';
 import { useState } from 'react';
+import AIContentGenerator from '../common/AIContentGenerator';
 
 const ProjectsForm = () => {
   const dispatch = useDispatch();
@@ -27,6 +29,8 @@ const ProjectsForm = () => {
   const projects = useSelector((state) => state.resume.projects);
   const [entries, setEntries] = useState(projects.length > 0 ? projects : [{}]);
   const [currentTech, setCurrentTech] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleAddEntry = () => {
     setEntries([...entries, { technologies: [] }]);
@@ -64,6 +68,17 @@ const ProjectsForm = () => {
       technologies: newEntries[index].technologies.filter((t) => t !== tech),
     };
     setEntries(newEntries);
+  };
+
+  const handleGenerateContent = (index) => {
+    setSelectedIndex(index);
+    onOpen();
+  };
+
+  const handleAIGenerated = (content) => {
+    if (selectedIndex !== null) {
+      handleChange(selectedIndex, 'description', content);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -119,7 +134,17 @@ const ProjectsForm = () => {
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Description</FormLabel>
+                <HStack justify="space-between" align="center">
+                  <FormLabel mb={0}>Description</FormLabel>
+                  <Button
+                    size="sm"
+                    leftIcon={<FaMagic />}
+                    variant="outline"
+                    onClick={() => handleGenerateContent(index)}
+                  >
+                    Generate with AI
+                  </Button>
+                </HStack>
                 <Textarea
                   value={entry.description || ''}
                   onChange={(e) => handleChange(index, 'description', e.target.value)}
@@ -186,6 +211,14 @@ const ProjectsForm = () => {
           Save Projects
         </Button>
       </VStack>
+
+      <AIContentGenerator
+        isOpen={isOpen}
+        onClose={onClose}
+        onGenerated={handleAIGenerated}
+        type="project"
+        placeholder="Describe your project, its features, technologies used, and impact. For example: Built a full-stack e-commerce platform using React and Node.js, implementing secure payment processing..."
+      />
     </form>
   );
 };
