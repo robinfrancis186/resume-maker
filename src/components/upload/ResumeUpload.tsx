@@ -11,227 +11,207 @@ import {
   HStack,
   Spinner,
   Progress,
-  Image,
-  SimpleGrid,
-  IconButton,
+  Heading,
+  Divider,
   useColorModeValue,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
-import { FaCloudUploadAlt, FaFileUpload, FaTrash } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaFileUpload, FaArrowRight } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { parseResume } from '../../services/resumeParser';
 import { importResume } from '../../store/resumeSlice.ts';
-
-interface UploadedFile {
-  file: File;
-  preview: string;
-}
+import { useNavigate } from 'react-router-dom';
 
 const ResumeUpload: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const bgColor = useColorModeValue('gray.50', 'gray.700');
   const borderColor = useColorModeValue('gray.300', 'gray.600');
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
-      file,
-      preview: URL.createObjectURL(file)
-    }));
-    setUploadedFiles(prev => [...prev, ...newFiles]);
+    const file = acceptedFiles[0]; // Only process the first file
+    if (!file) return;
 
-    for (const file of acceptedFiles) {
-      setIsProcessing(true);
-      setUploadProgress(0);
+    setUploadedFile(file);
+    setIsProcessing(true);
+    setUploadProgress(0);
+    
+    try {
+      // Simulate upload progress
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const resumeData = await parseResume(file);
+      dispatch(importResume(resumeData));
       
-      try {
-        // Simulate upload progress
-        const interval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(interval);
-              return prev;
-            }
-            return prev + 10;
-          });
-        }, 200);
+      clearInterval(interval);
+      setUploadProgress(100);
+      
+      toast({
+        title: 'Resume parsed successfully',
+        description: 'Your resume content has been extracted. Choose a template to continue.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
 
-        const resumeData = await parseResume(file);
-        dispatch(importResume(resumeData));
-        
-        clearInterval(interval);
-        setUploadProgress(100);
-        
-        toast({
-          title: 'Resume uploaded successfully',
-          description: 'Your resume content has been extracted and is ready for formatting.',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: 'Upload failed',
-          description: error instanceof Error ? error.message : 'Failed to process resume',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      } finally {
-        setIsProcessing(false);
-        setUploadProgress(0);
-      }
+      // Navigate to template selection after successful upload
+      navigate('/templates');
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'Failed to process resume',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsProcessing(false);
+      setUploadProgress(0);
     }
-  }, [dispatch, toast]);
-
-  const removeFile = (index: number) => {
-    setUploadedFiles(prev => {
-      const newFiles = [...prev];
-      URL.revokeObjectURL(newFiles[index].preview);
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
-  };
+  }, [dispatch, toast, navigate]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
       'application/json': ['.json'],
-      'image/*': ['.png', '.jpg', '.jpeg']
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
     },
-    maxSize: 200 * 1024 * 1024, // 200MB
+    maxSize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 1,
     disabled: isProcessing,
   });
 
-  React.useEffect(() => {
-    return () => {
-      // Cleanup previews
-      uploadedFiles.forEach(file => {
-        URL.revokeObjectURL(file.preview);
-      });
-    };
-  }, [uploadedFiles]);
-
   return (
-    <VStack spacing={4} width="100%" py={8}>
-      <Text fontSize="xl" fontWeight="bold">
-        Upload your resume or any work-related data.{' '}
-        <Link color="blue.400" href="#templates">
-          Recommended templates
-        </Link>
-      </Text>
+    <VStack spacing={8} width="100%" py={8} px={4}>
+      <VStack spacing={2} textAlign="center" maxW="600px">
+        <Heading size="xl">Create Your Professional Resume</Heading>
+        <Text fontSize="lg" color="gray.600" _dark={{ color: 'gray.300' }}>
+          Upload your existing resume and let our AI transform it into a professionally formatted document
+        </Text>
+      </VStack>
 
       <Box
-        {...getRootProps()}
-        width="100%"
-        p={10}
-        border="2px dashed"
-        borderColor={isDragActive ? 'blue.400' : borderColor}
-        borderRadius="lg"
-        bg={bgColor}
-        transition="all 0.2s"
-        cursor={isProcessing ? 'wait' : 'pointer'}
-        _hover={{
-          borderColor: 'blue.400',
-        }}
-        opacity={isProcessing ? 0.7 : 1}
+        maxW="600px"
+        w="100%"
+        p={8}
+        borderRadius="xl"
+        bg={useColorModeValue('white', 'gray.800')}
+        boxShadow="xl"
       >
-        <input {...getInputProps()} disabled={isProcessing} />
-        <VStack spacing={4}>
-          {isProcessing ? (
-            <>
-              <Spinner size="xl" color="blue.400" />
-              <Text fontSize="lg" textAlign="center">
-                Processing your file...
-              </Text>
-              <Progress
-                width="100%"
-                value={uploadProgress}
-                size="sm"
-                colorScheme="blue"
-                hasStripe
-                isAnimated
-              />
-            </>
-          ) : (
-            <>
-              <Icon
-                as={isDragActive ? FaFileUpload : FaCloudUploadAlt}
-                w={12}
-                h={12}
-                color={isDragActive ? 'blue.400' : 'gray.400'}
-              />
-              <Text fontSize="lg" textAlign="center">
-                {isDragActive
-                  ? 'Drop your file here'
-                  : 'Drag and drop file here'}
-              </Text>
-              <Text color="gray.500" fontSize="sm">
-                Supports PDF, JSON, PNG, JPG • Max 200MB
-              </Text>
-            </>
-          )}
+        <VStack spacing={6}>
+          <Alert status="info" borderRadius="md">
+            <AlertIcon />
+            <Text>
+              Upload your existing resume in PDF, DOC, or DOCX format. We'll extract the content and let you choose from our professional templates.
+            </Text>
+          </Alert>
+
+          <Box
+            {...getRootProps()}
+            width="100%"
+            p={10}
+            border="2px dashed"
+            borderColor={isDragActive ? 'blue.400' : borderColor}
+            borderRadius="lg"
+            bg={bgColor}
+            transition="all 0.2s"
+            cursor={isProcessing ? 'wait' : 'pointer'}
+            _hover={{
+              borderColor: 'blue.400',
+            }}
+            opacity={isProcessing ? 0.7 : 1}
+          >
+            <input {...getInputProps()} disabled={isProcessing} />
+            <VStack spacing={4}>
+              {isProcessing ? (
+                <>
+                  <Spinner size="xl" color="blue.400" />
+                  <Text fontSize="lg" textAlign="center">
+                    Analyzing your resume...
+                  </Text>
+                  <Progress
+                    width="100%"
+                    value={uploadProgress}
+                    size="sm"
+                    colorScheme="blue"
+                    hasStripe
+                    isAnimated
+                  />
+                </>
+              ) : (
+                <>
+                  <Icon
+                    as={isDragActive ? FaFileUpload : FaCloudUploadAlt}
+                    w={12}
+                    h={12}
+                    color={isDragActive ? 'blue.400' : 'gray.400'}
+                  />
+                  <Text fontSize="lg" textAlign="center">
+                    {isDragActive
+                      ? 'Drop your resume here'
+                      : 'Drag and drop your resume here'}
+                  </Text>
+                  <Text color="gray.500" fontSize="sm">
+                    Supports PDF, DOC, DOCX • Max 10MB
+                  </Text>
+                </>
+              )}
+            </VStack>
+          </Box>
+
+          <Divider />
+
+          <HStack width="100%" justify="center">
+            <Button
+              leftIcon={<FaFileUpload />}
+              onClick={() => document.querySelector('input')?.click()}
+              colorScheme="blue"
+              size="lg"
+              isDisabled={isProcessing}
+            >
+              Browse Files
+            </Button>
+            {uploadedFile && !isProcessing && (
+              <Button
+                rightIcon={<FaArrowRight />}
+                colorScheme="green"
+                size="lg"
+                onClick={() => navigate('/templates')}
+              >
+                Choose Template
+              </Button>
+            )}
+          </HStack>
         </VStack>
       </Box>
 
-      {uploadedFiles.length > 0 && (
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} width="100%">
-          {uploadedFiles.map((file, index) => (
-            <Box
-              key={index}
-              borderWidth="1px"
-              borderRadius="lg"
-              overflow="hidden"
-              position="relative"
-            >
-              {file.file.type.startsWith('image/') ? (
-                <Image
-                  src={file.preview}
-                  alt={file.file.name}
-                  width="100%"
-                  height="150px"
-                  objectFit="cover"
-                />
-              ) : (
-                <Box
-                  height="150px"
-                  bg="gray.100"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Text>{file.file.name}</Text>
-                </Box>
-              )}
-              <IconButton
-                aria-label="Remove file"
-                icon={<FaTrash />}
-                size="sm"
-                position="absolute"
-                top={2}
-                right={2}
-                colorScheme="red"
-                onClick={() => removeFile(index)}
-              />
-            </Box>
-          ))}
-        </SimpleGrid>
-      )}
-
-      <HStack>
-        <Button
-          leftIcon={<FaFileUpload />}
-          onClick={() => document.querySelector('input')?.click()}
-          colorScheme="blue"
-          size="lg"
-          isDisabled={isProcessing}
-        >
-          Browse files
-        </Button>
-      </HStack>
+      <VStack spacing={2} maxW="600px" textAlign="center">
+        <Text fontSize="sm" color="gray.500">
+          By uploading your resume, you agree to our{' '}
+          <Link color="blue.400" href="/terms">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link color="blue.400" href="/privacy">
+            Privacy Policy
+          </Link>
+        </Text>
+      </VStack>
     </VStack>
   );
 };
