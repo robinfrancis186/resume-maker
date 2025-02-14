@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
