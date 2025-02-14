@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
         plugins: ['@emotion/babel-plugin'],
       },
     })],
-    base: '/',
+    base: '/resume-maker/',
     server: {
       port: 3000,
       host: true
