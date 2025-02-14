@@ -5,7 +5,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react()],
+    plugins: [react({
+      jsxRuntime: 'automatic',
+      jsxImportSource: '@emotion/react',
+      babel: {
+        plugins: ['@emotion/babel-plugin'],
+      },
+    })],
     base: '/resume-maker/',
     server: {
       port: 3000,
@@ -13,7 +19,16 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion'],
+            icons: ['react-icons', '@chakra-ui/icons'],
+          },
+        },
+      },
     },
     define: {
       'process.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(env.VITE_CLERK_PUBLISHABLE_KEY),
