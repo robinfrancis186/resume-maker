@@ -10,6 +10,7 @@ const initialState: ResumeState = {
     linkedin: '',
     github: '',
     portfolio: '',
+    summary: '',
   },
   education: [],
   experience: [],
@@ -23,6 +24,12 @@ const resumeSlice = createSlice({
   name: 'resume',
   initialState,
   reducers: {
+    importResume: (state, action: PayloadAction<ResumeState>) => {
+      return {
+        ...action.payload,
+        selectedTemplate: state.selectedTemplate, // Preserve selected template
+      };
+    },
     setTemplate: (state, action: PayloadAction<string>) => {
       state.selectedTemplate = action.payload;
     },
@@ -69,6 +76,7 @@ const resumeSlice = createSlice({
 });
 
 export const {
+  importResume,
   setTemplate,
   updatePersonalInfo,
   addEducation,
