@@ -9,10 +9,11 @@
 \usepackage{geometry}
 \usepackage{fancyhdr}
 
-% Define colors
-\definecolor{primary}{RGB}{128, 90, 213}
-\definecolor{text}{RGB}{45, 55, 72}
-\definecolor{subtext}{RGB}{74, 85, 104}
+% Define colors from our app's theme
+\definecolor{primary}{RGB}{9, 103, 210}  % primary.500
+\definecolor{accent}{RGB}{43, 176, 237}  % accent.500
+\definecolor{text}{RGB}{31, 41, 55}      % gray.900
+\definecolor{subtext}{RGB}{97, 103, 116} % gray.600
 
 % Configure page margins
 \geometry{margin=1in}
@@ -45,8 +46,8 @@
 \end{minipage}
 \begin{minipage}[t]{0.7\textwidth}
     \vspace{0pt}
-    {\Huge\textbf{John Smith}}\\[4pt]
-    {\large\textcolor{primary}{Senior Software Engineer}}\\[4pt]
+    {\Huge\textbf{\textcolor{primary}{John Smith}}}\\[4pt]
+    {\large\textcolor{accent}{Senior Software Engineer}}\\[4pt]
     \textcolor{subtext}{
         \faEnvelope\ john@email.com \quad
         \faPhone\ (555) 123-4567\\
@@ -81,14 +82,14 @@
     \section*{\textcolor{primary}{Experience}}
     
     \subsection*{Tech Company, Inc.}
-    \textcolor{primary}{Senior Software Engineer}\\
+    \textcolor{accent}{Senior Software Engineer}\\
     \textcolor{subtext}{2020 - Present}\\[4pt]
     \begin{itemize}[leftmargin=*]
         \item Led development of key features resulting in 40\% user growth
     \end{itemize}
 
     \subsection*{Startup Co.}
-    \textcolor{primary}{Software Engineer}\\
+    \textcolor{accent}{Software Engineer}\\
     \textcolor{subtext}{2018 - 2020}\\[4pt]
     \begin{itemize}[leftmargin=*]
         \item Developed and maintained core application features

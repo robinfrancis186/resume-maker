@@ -5,31 +5,33 @@
 \usepackage{hyperref}
 \usepackage{fontawesome}
 \usepackage[sfdefault]{roboto}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{enumitem}
 
-% Define colors
-\definecolor{headerColor}{RGB}{26, 54, 93}
-\definecolor{subheaderColor}{RGB}{33, 42, 62}
+% Define colors from our app's theme
+\definecolor{primary}{RGB}{9, 103, 210}  % primary.500
+\definecolor{accent}{RGB}{43, 176, 237}  % accent.500
+\definecolor{text}{RGB}{31, 41, 55}      % gray.900
 
 % Configure page margins
 \usepackage[margin=0.5in]{geometry}
 
 % Configure section formatting
-\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titleformat{\section}
+{\Large\scshape\raggedright\color{primary}}{}{0em}{}[\titlerule]
 \titlespacing*{\section}{0pt}{12pt}{8pt}
 
 % Configure subsection formatting
-\titleformat{\subsection}{\large\bfseries\raggedright}{}{0em}{}
+\titleformat{\subsection}{\large\bfseries\raggedright\color{text}}{}{0em}{}
 \titlespacing*{\subsection}{0pt}{8pt}{4pt}
 
 \begin{document}
 
 % Header
 \begin{center}
-    {\Huge\textbf{John Smith}}\\[4pt]
-    {\large Senior Software Engineer}\\[4pt]
-    \textcolor{subheaderColor}{
+    {\Huge\textbf{\textcolor{primary}{John Smith}}}\\[4pt]
+    {\large\textcolor{accent}{Senior Software Engineer}}\\[4pt]
+    \textcolor{text}{
         \faEnvelope\ john@email.com \quad
         \faPhone\ (555) 123-4567 \quad
         \faMapMarker\ San Francisco, CA
@@ -39,13 +41,13 @@
 % Experience Section
 \section{Experience}
 \subsection*{Tech Company, Inc.}
-\textit{Senior Software Engineer} \hfill 2020 - Present\\
+\textit{\textcolor{accent}{Senior Software Engineer}} \hfill 2020 - Present\\
 \begin{itemize}[leftmargin=*]
     \item Led development of key features resulting in 40\% user growth
 \end{itemize}
 
 \subsection*{Startup Co.}
-\textit{Software Engineer} \hfill 2018 - 2020\\
+\textit{\textcolor{accent}{Software Engineer}} \hfill 2018 - 2020\\
 \begin{itemize}[leftmargin=*]
     \item Developed and maintained core application features
 \end{itemize}

@@ -9,10 +9,11 @@
 \usepackage{enumitem}
 \usepackage{geometry}
 
-% Define colors
-\definecolor{primary}{RGB}{31, 41, 55}
-\definecolor{accent}{RGB}{59, 130, 246}
-\definecolor{text}{RGB}{55, 65, 81}
+% Define colors from our app's theme
+\definecolor{primary}{RGB}{9, 103, 210}  % primary.500
+\definecolor{accent}{RGB}{43, 176, 237}  % accent.500
+\definecolor{text}{RGB}{31, 41, 55}      % gray.900
+\definecolor{subtext}{RGB}{97, 103, 116} % gray.600
 
 % Configure page margins
 \geometry{margin=0.75in}
@@ -33,9 +34,9 @@
 
 % Header
 \begin{center}
-    {\Huge\textbf{John Smith}}\\[6pt]
+    {\Huge\textbf{\textcolor{primary}{John Smith}}}\\[6pt]
     {\large\textcolor{accent}{Senior Software Engineer}}\\[6pt]
-    \textcolor{text}{
+    \textcolor{subtext}{
         \faEnvelope\ john@email.com \quad
         \faPhone\ (555) 123-4567 \quad
         \faMapMarker\ San Francisco, CA
@@ -46,21 +47,21 @@
 
 % Education Section (Prioritized for entry level)
 \section{Education}
-\textbf{University of Technology} \hfill \textcolor{text}{2018}\\
+\textbf{University of Technology} \hfill \textcolor{subtext}{2018}\\
 Bachelor of Science in Computer Science\\
-\textcolor{text}{Relevant Coursework: Data Structures, Algorithms, Software Engineering, Database Systems}
+\textcolor{subtext}{Relevant Coursework: Data Structures, Algorithms, Software Engineering, Database Systems}
 
 % Skills Section (Comprehensive for entry level)
 \section{Skills}
-\textbf{Programming Languages:} JavaScript, Python, Java\\
-\textbf{Web Technologies:} React, Node.js, HTML5, CSS3\\
-\textbf{Tools \& Platforms:} Git, AWS, SQL, Docker\\
-\textbf{Soft Skills:} Problem Solving, Team Collaboration, Communication
+\textbf{\textcolor{accent}{Programming Languages:}} JavaScript, Python, Java\\
+\textbf{\textcolor{accent}{Web Technologies:}} React, Node.js, HTML5, CSS3\\
+\textbf{\textcolor{accent}{Tools \& Platforms:}} Git, AWS, SQL, Docker\\
+\textbf{\textcolor{accent}{Soft Skills:}} Problem Solving, Team Collaboration, Communication
 
 % Experience Section
 \section{Experience}
 \subsection*{Tech Company, Inc.}
-\textbf{Senior Software Engineer} \hfill \textcolor{text}{2020 - Present}
+\textbf{\textcolor{accent}{Senior Software Engineer}} \hfill \textcolor{subtext}{2020 - Present}
 \begin{itemize}[leftmargin=*]
     \item Led development of key features resulting in 40\% user growth
     \item Collaborated with cross-functional teams to implement new features
@@ -68,7 +69,7 @@ Bachelor of Science in Computer Science\\
 \end{itemize}
 
 \subsection*{Startup Co.}
-\textbf{Software Engineer} \hfill \textcolor{text}{2018 - 2020}
+\textbf{\textcolor{accent}{Software Engineer}} \hfill \textcolor{subtext}{2018 - 2020}
 \begin{itemize}[leftmargin=*]
     \item Developed and maintained core application features
     \item Participated in agile development processes
@@ -77,13 +78,13 @@ Bachelor of Science in Computer Science\\
 
 % Projects Section (Important for entry level)
 \section{Projects}
-\textbf{Personal Portfolio Website}
+\textbf{\textcolor{accent}{Personal Portfolio Website}}
 \begin{itemize}[leftmargin=*]
     \item Designed and developed a responsive portfolio website using React and Chakra UI
     \item Implemented dark mode and accessibility features
 \end{itemize}
 
-\textbf{Task Management Application}
+\textbf{\textcolor{accent}{Task Management Application}}
 \begin{itemize}[leftmargin=*]
     \item Built a full-stack task management app using Node.js and MongoDB
     \item Implemented user authentication and real-time updates
