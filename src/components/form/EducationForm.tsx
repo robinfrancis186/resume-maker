@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
   Box,
@@ -12,175 +12,130 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { updateEducation, addEducation } from '../../store/resumeSlice';
+import { updateEducation, addEducation, removeEducation } from '../../store/resumeSlice';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
-import { Education } from '../../types/resume';
-
-interface EducationEntry extends Education {}
+import { Education } from '../../types';
 
 const EducationForm: React.FC = () => {
   const education = useTypedSelector((state) => state.resume.education);
   const dispatch = useDispatch();
   const toast = useToast();
-  const [entries, setEntries] = useState<EducationEntry[]>(education);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [entries, setEntries] = useState<Education[]>(education);
+
+  useEffect(() => {
+    setEntries(education);
+  }, [education]);
 
   const handleAddEntry = () => {
-    setEntries([
-      ...entries,
-      {
-        school: '',
-        degree: '',
-        fieldOfStudy: '',
-        startDate: '',
-        endDate: '',
-        gpa: '',
-        description: ''
-      },
-    ]);
+    const newEducation: Education = {
+      school: '',
+      degree: '',
+      fieldOfStudy: '',
+      startDate: '',
+      endDate: '',
+      gpa: '',
+      description: '',
+    };
+    dispatch(addEducation(newEducation));
   };
 
   const handleRemoveEntry = (index: number) => {
-    const newEntries = entries.filter((_, i) => i !== index);
-    setEntries(newEntries);
+    dispatch(removeEducation(index));
   };
 
-  const handleChange = (index: number, field: keyof EducationEntry, value: string) => {
-    const newEntries = [...entries];
-    newEntries[index] = {
-      ...newEntries[index],
+  const handleChange = (index: number, field: keyof Education, value: string) => {
+    const updatedEducation: Education = {
+      ...entries[index],
       [field]: value,
     };
-    setEntries(newEntries);
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const education: Education = {
-      school: formData.get('school') as string,
-      degree: formData.get('degree') as string,
-      fieldOfStudy: formData.get('fieldOfStudy') as string,
-      startDate: formData.get('startDate') as string,
-      endDate: formData.get('endDate') as string || '',
-      gpa: formData.get('gpa') as string || undefined,
-      description: formData.get('description') as string || undefined,
-    };
-
-    if (editIndex !== null) {
-      dispatch(updateEducation({ index: editIndex, education }));
-      toast({
-        title: 'Education updated',
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-      });
-    } else {
-      dispatch(addEducation(education));
-      toast({
-        title: 'Education added',
-        status: 'success',
-        duration: 2000,
-        isClosable: true,
-      });
-    }
-    
-    // Reset form
-    e.currentTarget.reset();
-    setEditIndex(null);
+    dispatch(updateEducation({ index, education: updatedEducation }));
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
-        {entries.map((entry, index) => (
-          <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
-            <VStack spacing={4} align="stretch">
-              <HStack justify="space-between">
-                <FormControl isRequired>
-                  <FormLabel>School</FormLabel>
-                  <Input
-                    value={entry.school}
-                    onChange={(e) => handleChange(index, 'school', e.target.value)}
-                    placeholder="Enter school name"
-                  />
-                </FormControl>
-                <IconButton
-                  aria-label="Remove education"
-                  icon={<DeleteIcon />}
-                  onClick={() => handleRemoveEntry(index)}
-                  colorScheme="red"
+    <VStack spacing={4} align="stretch">
+      {entries.map((entry, index) => (
+        <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
+          <VStack spacing={4} align="stretch">
+            <HStack justify="space-between">
+              <FormControl isRequired>
+                <FormLabel>School</FormLabel>
+                <Input
+                  value={entry.school}
+                  onChange={(e) => handleChange(index, 'school', e.target.value)}
+                  placeholder="Enter school name"
                 />
-              </HStack>
+              </FormControl>
+              <IconButton
+                aria-label="Remove education"
+                icon={<DeleteIcon />}
+                onClick={() => handleRemoveEntry(index)}
+                colorScheme="red"
+              />
+            </HStack>
+
+            <FormControl isRequired>
+              <FormLabel>Degree</FormLabel>
+              <Input
+                value={entry.degree}
+                onChange={(e) => handleChange(index, 'degree', e.target.value)}
+                placeholder="Enter degree"
+              />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Field of Study</FormLabel>
+              <Input
+                value={entry.fieldOfStudy}
+                onChange={(e) => handleChange(index, 'fieldOfStudy', e.target.value)}
+                placeholder="Enter field of study"
+              />
+            </FormControl>
+
+            <HStack>
+              <FormControl isRequired>
+                <FormLabel>Start Date</FormLabel>
+                <Input
+                  type="month"
+                  value={entry.startDate}
+                  onChange={(e) => handleChange(index, 'startDate', e.target.value)}
+                />
+              </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Degree</FormLabel>
+                <FormLabel>End Date</FormLabel>
                 <Input
-                  value={entry.degree}
-                  onChange={(e) => handleChange(index, 'degree', e.target.value)}
-                  placeholder="Enter degree"
+                  type="month"
+                  value={entry.endDate}
+                  onChange={(e) => handleChange(index, 'endDate', e.target.value)}
                 />
               </FormControl>
+            </HStack>
 
-              <FormControl isRequired>
-                <FormLabel>Field of Study</FormLabel>
-                <Input
-                  value={entry.fieldOfStudy}
-                  onChange={(e) => handleChange(index, 'fieldOfStudy', e.target.value)}
-                  placeholder="Enter field of study"
-                />
-              </FormControl>
+            <FormControl>
+              <FormLabel>GPA</FormLabel>
+              <Input
+                value={entry.gpa || ''}
+                onChange={(e) => handleChange(index, 'gpa', e.target.value)}
+                placeholder="Enter GPA (optional)"
+              />
+            </FormControl>
 
-              <HStack>
-                <FormControl isRequired>
-                  <FormLabel>Start Date</FormLabel>
-                  <Input
-                    type="month"
-                    value={entry.startDate}
-                    onChange={(e) => handleChange(index, 'startDate', e.target.value)}
-                  />
-                </FormControl>
+            <FormControl>
+              <FormLabel>Description</FormLabel>
+              <Input
+                value={entry.description || ''}
+                onChange={(e) => handleChange(index, 'description', e.target.value)}
+                placeholder="Enter additional details (optional)"
+              />
+            </FormControl>
+          </VStack>
+        </Box>
+      ))}
 
-                <FormControl isRequired>
-                  <FormLabel>End Date</FormLabel>
-                  <Input
-                    type="month"
-                    value={entry.endDate}
-                    onChange={(e) => handleChange(index, 'endDate', e.target.value)}
-                  />
-                </FormControl>
-              </HStack>
-
-              <FormControl>
-                <FormLabel>GPA</FormLabel>
-                <Input
-                  value={entry.gpa}
-                  onChange={(e) => handleChange(index, 'gpa', e.target.value)}
-                  placeholder="Enter GPA (optional)"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Description</FormLabel>
-                <Input
-                  value={entry.description}
-                  onChange={(e) => handleChange(index, 'description', e.target.value)}
-                  placeholder="Enter additional details (optional)"
-                />
-              </FormControl>
-            </VStack>
-          </Box>
-        ))}
-
-        <Button onClick={handleAddEntry} colorScheme="blue">
-          Add Education
-        </Button>
-
-        <Button type="submit" colorScheme="green">
-          Save Changes
-        </Button>
-      </VStack>
-    </Box>
+      <Button onClick={handleAddEntry} colorScheme="blue">
+        Add Education
+      </Button>
+    </VStack>
   );
 };
 

@@ -16,7 +16,7 @@ import {
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaLinkedin, FaGithub, FaGlobe, FaRobot } from 'react-icons/fa';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import html2pdf from 'html2pdf.js';
-import { ResumeState } from '../../types/resume';
+import { ResumeState } from '../../types';
 import { analyzeResume, ATSAnalysisResult } from '../../services/atsScoring';
 import { resumeToString } from '../../utils/resumeUtils';
 import ATSScoreModal from './ATSScoreModal';
