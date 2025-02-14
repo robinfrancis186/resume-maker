@@ -28,14 +28,35 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm list vite || true
+          npm list @vitejs/plugin-react || true
+
+      - name: Create 404.html
+        run: |
+          mkdir -p dist
+          cp public/404.html dist/404.html || true
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          ls -la dist/
+          cat dist/index.html || true
+
+      - name: Create .nojekyll
+        run: touch dist/.nojekyll
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
-          clean: true 
+          clean: true
+          single-commit: true
+
+      - name: Verify Deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30
+          curl -I https://robinfrancis186.github.io/resume-maker/ || true 
