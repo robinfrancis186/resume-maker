@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, ThemeConfig } from '@chakra-ui/react';
 import { HashRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { Provider } from 'react-redux';
@@ -44,7 +44,7 @@ const ClerkWithRoutes = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider theme={theme as ThemeConfig}>
         <Router>
           <ClerkWithRoutes />
         </Router>
