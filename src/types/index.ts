@@ -6,6 +6,7 @@ export interface PersonalInfo {
   linkedin: string;
   github: string;
   portfolio: string;
+  summary?: string;
 }
 
 export interface Education {
@@ -55,7 +56,7 @@ export interface AIContentGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
   onGenerated: (content: string) => void;
-  type: 'experience' | 'project' | 'summary';
+  type: 'experience' | 'project' | 'summary' | 'skills' | 'education' | 'achievements';
   placeholder: string;
 }
 

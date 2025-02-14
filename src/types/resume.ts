@@ -44,8 +44,10 @@ export interface ResumeState {
   personalInfo: PersonalInfo;
   education: Education[];
   experience: Experience[];
-  projects: Project[];
   skills: Skill[];
+  projects: Project[];
+  certifications: any[];
+  selectedTemplate: string;
 }
 
 export type ResumeSection = 'personal' | 'education' | 'experience' | 'projects' | 'skills'; 
