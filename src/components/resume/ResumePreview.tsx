@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Box,
   VStack,
@@ -9,18 +10,27 @@ import {
   Divider,
   Button,
   useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import html2pdf from 'html2pdf.js';
+import { RootState, ResumeState } from '../../types';
 
-const ResumePreview = () => {
-  const resume = useSelector((state) => state.resume);
+interface ResumePreviewProps {
+  data: ResumeState;
+}
+
+const ResumePreview: React.FC<ResumePreviewProps> = () => {
+  const resume = useSelector((state: RootState) => state.resume);
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const toast = useToast();
 
   const handleDownloadPDF = () => {
     const element = document.getElementById('resume-preview');
+    if (!element) return;
+
     const opt = {
       margin: 1,
       filename: 'resume.pdf',
@@ -30,6 +40,14 @@ const ResumePreview = () => {
     };
 
     html2pdf().set(opt).from(element).save();
+    
+    toast({
+      title: 'Resume Downloaded',
+      description: 'Your resume has been downloaded as a PDF.',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
   };
 
   return (
@@ -157,35 +175,34 @@ const ResumePreview = () => {
 
         {/* Skills Section */}
         {resume.skills.length > 0 && (
-          <>
-            <Heading size="md" mb={4}>Skills</Heading>
-            <VStack spacing={4} align="stretch" mb={6}>
-              {Object.entries(
-                resume.skills.reduce((acc, skill) => {
-                  if (!acc[skill.category]) acc[skill.category] = [];
-                  acc[skill.category].push(skill.name);
-                  return acc;
-                }, {})
-              ).map(([category, skills]) => (
-                <Box key={category}>
-                  <Text fontWeight="bold" mb={2}>{category}</Text>
-                  <HStack wrap="wrap" spacing={2}>
-                    {skills.map((skill) => (
-                      <Tag
-                        key={skill}
-                        size="md"
-                        colorScheme="purple"
-                        borderRadius="full"
-                      >
-                        {skill}
-                      </Tag>
-                    ))}
-                  </HStack>
-                </Box>
-              ))}
-            </VStack>
-            <Divider mb={6} />
-          </>
+          <Box>
+            <Heading size="lg" color="blue.600" mb={4}>
+              Skills
+            </Heading>
+            {Object.entries(
+              resume.skills.reduce<Record<string, string[]>>((acc, skill) => {
+                const category = skill.category;
+                if (!acc[category]) {
+                  acc[category] = [];
+                }
+                acc[category].push(skill.name);
+                return acc;
+              }, {} as Record<string, string[]>)
+            ).map(([category, skills]) => (
+              <Box key={category} mb={4}>
+                <Heading size="md" color="gray.700" mb={2}>
+                  {category}
+                </Heading>
+                <HStack wrap="wrap" spacing={2}>
+                  {skills.map((skill: string) => (
+                    <Tag key={skill} colorScheme="blue" size="md">
+                      {skill}
+                    </Tag>
+                  ))}
+                </HStack>
+              </Box>
+            ))}
+          </Box>
         )}
 
         {/* Projects Section */}
