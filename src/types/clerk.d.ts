@@ -35,6 +35,7 @@ declare module '@clerk/clerk-react' {
   interface SignInButtonProps {
     mode?: 'modal' | 'redirect';
     redirectUrl?: string;
+    children?: ReactNode;
   }
 
   export const ClerkProvider: ComponentType<ClerkProviderProps>;
