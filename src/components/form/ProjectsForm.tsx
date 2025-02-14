@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { useDispatch } from 'react-redux';
-import { addProject, updateProject, removeProject } from '../../store/resumeSlice';
+import { addProject, updateProject, removeProject } from '../../store/resumeSlice.ts';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Project } from '../../types/resume';
 

@@ -12,7 +12,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { updateEducation, addEducation, removeEducation } from '../../store/resumeSlice';
+import { updateEducation, addEducation, removeEducation } from '../../store/resumeSlice.ts';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Education } from '../../types';
 

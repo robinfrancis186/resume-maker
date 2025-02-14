@@ -13,7 +13,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { updateExperience, addExperience, removeExperience } from '../../store/resumeSlice';
+import { updateExperience, addExperience, removeExperience } from '../../store/resumeSlice.ts';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Experience } from '../../types';
 

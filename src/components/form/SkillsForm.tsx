@@ -17,7 +17,7 @@ import {
   WrapItem,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { addSkill, updateSkill, removeSkill } from '../../store/resumeSlice';
+import { addSkill, updateSkill, removeSkill } from '../../store/resumeSlice.ts';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Skill } from '../../types/resume';
 
