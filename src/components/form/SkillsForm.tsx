@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
   Box,
@@ -7,127 +7,118 @@ import {
   FormLabel,
   Input,
   VStack,
+  HStack,
+  IconButton,
+  useToast,
   Tag,
   TagLabel,
   TagCloseButton,
   Wrap,
   WrapItem,
-  useToast,
 } from '@chakra-ui/react';
-import { updateSkills } from '../../store/resumeSlice';
+import { DeleteIcon } from '@chakra-ui/icons';
+import { addSkill, updateSkill, removeSkill } from '../../store/resumeSlice';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Skill } from '../../types/resume';
-
-interface SkillsByCategory {
-  [key: string]: string[];
-}
 
 const SkillsForm: React.FC = () => {
   const skills = useTypedSelector((state) => state.resume.skills);
   const dispatch = useDispatch();
   const toast = useToast();
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  const initialSkillsByCategory = skills.reduce<SkillsByCategory>((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const skill: Skill = {
+      category: formData.get('category') as string,
+      name: formData.get('name') as string,
+    };
+
+    if (editIndex !== null) {
+      dispatch(updateSkill({ index: editIndex, skill }));
+      toast({
+        title: 'Skill updated',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    } else {
+      dispatch(addSkill(skill));
+      toast({
+        title: 'Skill added',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
     }
-    acc[skill.category].push(skill.name);
-    return acc;
-  }, {});
 
-  const [category, setCategory] = useState('');
-  const [skillInput, setSkillInput] = useState('');
-  const [skillsByCategory, setSkillsByCategory] = useState<SkillsByCategory>(initialSkillsByCategory);
-
-  const handleAddSkill = (e: FormEvent) => {
-    e.preventDefault();
-    if (!category || !skillInput) return;
-
-    const skills = skillInput.split(',').map(s => s.trim()).filter(s => s);
-    if (skills.length === 0) return;
-
-    setSkillsByCategory(prev => ({
-      ...prev,
-      [category]: [...(prev[category] || []), ...skills],
-    }));
-
-    setSkillInput('');
+    // Reset form
+    e.currentTarget.reset();
+    setEditIndex(null);
   };
 
-  const handleRemoveSkill = (category: string, skill: string) => {
-    setSkillsByCategory(prev => ({
-      ...prev,
-      [category]: skillsByCategory[category].filter((s) => s !== skill),
-    }));
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const updatedSkills: Skill[] = Object.entries(skillsByCategory).flatMap(
-      ([category, skills]) =>
-        skills.map((skill) => ({ category, name: skill }))
-    );
-    dispatch(updateSkills(updatedSkills));
+  const handleDelete = (index: number) => {
+    dispatch(removeSkill(index));
     toast({
-      title: 'Skills updated',
-      status: 'success',
+      title: 'Skill removed',
+      status: 'info',
       duration: 2000,
       isClosable: true,
     });
   };
 
   return (
-    <Box as="form" onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
-        <Box as="form" onSubmit={handleAddSkill}>
-          <VStack spacing={4}>
-            <FormControl isRequired>
-              <FormLabel>Skill Category</FormLabel>
-              <Input
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g., Programming Languages, Tools, Soft Skills"
-              />
-            </FormControl>
+    <VStack spacing={4} align="stretch">
+      <form onSubmit={handleSubmit}>
+        <VStack spacing={4}>
+          <FormControl isRequired>
+            <FormLabel>Category</FormLabel>
+            <Input name="category" placeholder="e.g., Programming Languages, Tools, Soft Skills" />
+          </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Skills (comma-separated)</FormLabel>
-              <Input
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                placeholder="e.g., JavaScript, React, Node.js"
-              />
-            </FormControl>
+          <FormControl isRequired>
+            <FormLabel>Skill Name</FormLabel>
+            <Input name="name" placeholder="e.g., JavaScript, React, Leadership" />
+          </FormControl>
 
-            <Button type="submit" colorScheme="blue">
-              Add Skills
-            </Button>
-          </VStack>
-        </Box>
+          <Button type="submit" colorScheme="blue" width="full">
+            {editIndex !== null ? 'Update Skill' : 'Add Skill'}
+          </Button>
+        </VStack>
+      </form>
 
-        {Object.entries(skillsByCategory).map(([category, skills]) => (
-          <Box key={category} borderWidth="1px" borderRadius="lg" p={4}>
+      <VStack spacing={4} mt={4}>
+        {Object.entries(
+          skills.reduce<Record<string, string[]>>((acc, skill) => {
+            if (!acc[skill.category]) {
+              acc[skill.category] = [];
+            }
+            acc[skill.category].push(skill.name);
+            return acc;
+          }, {})
+        ).map(([category, skillNames]) => (
+          <Box key={category} width="full">
             <FormLabel>{category}</FormLabel>
             <Wrap spacing={2}>
-              {skills.map((skill) => (
-                <WrapItem key={skill}>
-                  <Tag size="lg" colorScheme="primary" borderRadius="full">
-                    <TagLabel>{skill}</TagLabel>
-                    <TagCloseButton
-                      onClick={() => handleRemoveSkill(category, skill)}
-                    />
-                  </Tag>
-                </WrapItem>
-              ))}
+              {skillNames.map((name) => {
+                const index = skills.findIndex(
+                  (s) => s.category === category && s.name === name
+                );
+                return (
+                  <WrapItem key={`${category}-${name}`}>
+                    <Tag size="lg" colorScheme="blue" borderRadius="full">
+                      <TagLabel>{name}</TagLabel>
+                      <TagCloseButton onClick={() => handleDelete(index)} />
+                    </Tag>
+                  </WrapItem>
+                );
+              })}
             </Wrap>
           </Box>
         ))}
-
-        <Button type="submit" colorScheme="green">
-          Save Changes
-        </Button>
       </VStack>
-    </Box>
+    </VStack>
   );
 };
 

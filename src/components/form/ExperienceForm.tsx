@@ -13,7 +13,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { updateExperience } from '../../store/resumeSlice';
+import { updateExperience, addExperience } from '../../store/resumeSlice';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Experience } from '../../types/resume';
 
@@ -24,6 +24,7 @@ const ExperienceForm: React.FC = () => {
   const dispatch = useDispatch();
   const toast = useToast();
   const [entries, setEntries] = useState<ExperienceEntry[]>(experience);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const handleAddEntry = () => {
     setEntries([
@@ -60,15 +61,39 @@ const ExperienceForm: React.FC = () => {
     setEntries(newEntries);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(updateExperience(entries));
-    toast({
-      title: 'Experience updated',
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    });
+    const formData = new FormData(e.currentTarget);
+    const experience: Experience = {
+      company: formData.get('company') as string,
+      position: formData.get('position') as string,
+      location: formData.get('location') as string,
+      startDate: formData.get('startDate') as string,
+      endDate: formData.get('endDate') as string || '',
+      description: (formData.get('description') as string).split('\n').filter(line => line.trim() !== ''),
+    };
+
+    if (editIndex !== null) {
+      dispatch(updateExperience({ index: editIndex, experience }));
+      toast({
+        title: 'Experience updated',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    } else {
+      dispatch(addExperience(experience));
+      toast({
+        title: 'Experience added',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+    
+    // Reset form
+    e.currentTarget.reset();
+    setEditIndex(null);
   };
 
   return (

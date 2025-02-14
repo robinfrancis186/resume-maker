@@ -12,7 +12,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { updateEducation } from '../../store/resumeSlice';
+import { updateEducation, addEducation } from '../../store/resumeSlice';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { Education } from '../../types/resume';
 
@@ -23,6 +23,7 @@ const EducationForm: React.FC = () => {
   const dispatch = useDispatch();
   const toast = useToast();
   const [entries, setEntries] = useState<EducationEntry[]>(education);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const handleAddEntry = () => {
     setEntries([
@@ -53,15 +54,40 @@ const EducationForm: React.FC = () => {
     setEntries(newEntries);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(updateEducation(entries));
-    toast({
-      title: 'Education updated',
-      status: 'success',
-      duration: 2000,
-      isClosable: true,
-    });
+    const formData = new FormData(e.currentTarget);
+    const education: Education = {
+      school: formData.get('school') as string,
+      degree: formData.get('degree') as string,
+      fieldOfStudy: formData.get('fieldOfStudy') as string,
+      startDate: formData.get('startDate') as string,
+      endDate: formData.get('endDate') as string || '',
+      gpa: formData.get('gpa') as string || undefined,
+      description: formData.get('description') as string || undefined,
+    };
+
+    if (editIndex !== null) {
+      dispatch(updateEducation({ index: editIndex, education }));
+      toast({
+        title: 'Education updated',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    } else {
+      dispatch(addEducation(education));
+      toast({
+        title: 'Education added',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+    
+    // Reset form
+    e.currentTarget.reset();
+    setEditIndex(null);
   };
 
   return (

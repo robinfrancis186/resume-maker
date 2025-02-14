@@ -3,27 +3,28 @@ export interface PersonalInfo {
   email: string;
   phone: string;
   location: string;
-  linkedin: string | undefined;
-  github: string | undefined;
-  portfolio: string | undefined;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string;
   summary?: string;
 }
 
 export interface Education {
   school: string;
   degree: string;
+  fieldOfStudy: string;
   startDate: string;
-  endDate?: string;
+  endDate: string;
   gpa?: string;
-  fieldOfStudy?: string;
+  description?: string;
 }
 
 export interface Experience {
   company: string;
   position: string;
-  startDate: string;
-  endDate?: string;
   location: string;
+  startDate: string;
+  endDate: string;
   description: string[];
 }
 
@@ -70,6 +71,8 @@ export interface ResumeFormProps {
 export interface ResumePreviewProps {
   data: ResumeState;
 }
+
+export type ResumeSection = 'personal' | 'education' | 'experience' | 'projects' | 'skills';
 
 export interface EducationEntry extends Education {
   id?: string;
