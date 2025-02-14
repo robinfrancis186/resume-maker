@@ -30,6 +30,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Type Check
+        run: npm run type-check || true
+
       - name: Build
         run: npm run build
 
@@ -40,10 +43,13 @@ jobs:
           touch docs/.nojekyll
           cp docs/index.html docs/404.html
 
-      - name: Commit and Push Changes
+      - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and Push Changes
+        run: |
           git add docs
-          git commit -m "chore: Update built files"
+          git commit -m "chore: Update built files" || echo "No changes to commit"
           git push origin main 
