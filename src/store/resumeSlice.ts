@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ResumeState, Education, Experience, PersonalInfo, Project, Skill } from '../types/resume';
+import { ResumeState } from '../types';
 
 const initialState: ResumeState = {
   personalInfo: {
@@ -9,42 +9,80 @@ const initialState: ResumeState = {
     location: '',
     linkedin: '',
     github: '',
-    portfolio: ''
+    portfolio: '',
   },
   education: [],
   experience: [],
   skills: [],
-  projects: []
+  projects: [],
+  certifications: [],
+  selectedTemplate: 'modern',
 };
 
 const resumeSlice = createSlice({
   name: 'resume',
   initialState,
   reducers: {
-    updatePersonalInfo: (state, action: PayloadAction<PersonalInfo>) => {
-      state.personalInfo = action.payload;
+    setTemplate: (state, action: PayloadAction<string>) => {
+      state.selectedTemplate = action.payload;
     },
-    updateEducation: (state, action: PayloadAction<Education[]>) => {
-      state.education = action.payload;
+    updatePersonalInfo: (state, action: PayloadAction<Partial<ResumeState['personalInfo']>>) => {
+      state.personalInfo = { ...state.personalInfo, ...action.payload };
     },
-    updateExperience: (state, action: PayloadAction<Experience[]>) => {
-      state.experience = action.payload;
+    addEducation: (state, action: PayloadAction<ResumeState['education'][0]>) => {
+      state.education.push(action.payload);
     },
-    updateSkills: (state, action: PayloadAction<Skill[]>) => {
-      state.skills = action.payload;
+    updateEducation: (state, action: PayloadAction<{ index: number; education: ResumeState['education'][0] }>) => {
+      state.education[action.payload.index] = action.payload.education;
     },
-    updateProjects: (state, action: PayloadAction<Project[]>) => {
-      state.projects = action.payload;
-    }
-  }
+    removeEducation: (state, action: PayloadAction<number>) => {
+      state.education.splice(action.payload, 1);
+    },
+    addExperience: (state, action: PayloadAction<ResumeState['experience'][0]>) => {
+      state.experience.push(action.payload);
+    },
+    updateExperience: (state, action: PayloadAction<{ index: number; experience: ResumeState['experience'][0] }>) => {
+      state.experience[action.payload.index] = action.payload.experience;
+    },
+    removeExperience: (state, action: PayloadAction<number>) => {
+      state.experience.splice(action.payload, 1);
+    },
+    addSkill: (state, action: PayloadAction<ResumeState['skills'][0]>) => {
+      state.skills.push(action.payload);
+    },
+    updateSkill: (state, action: PayloadAction<{ index: number; skill: ResumeState['skills'][0] }>) => {
+      state.skills[action.payload.index] = action.payload.skill;
+    },
+    removeSkill: (state, action: PayloadAction<number>) => {
+      state.skills.splice(action.payload, 1);
+    },
+    addProject: (state, action: PayloadAction<ResumeState['projects'][0]>) => {
+      state.projects.push(action.payload);
+    },
+    updateProject: (state, action: PayloadAction<{ index: number; project: ResumeState['projects'][0] }>) => {
+      state.projects[action.payload.index] = action.payload.project;
+    },
+    removeProject: (state, action: PayloadAction<number>) => {
+      state.projects.splice(action.payload, 1);
+    },
+  },
 });
 
 export const {
+  setTemplate,
   updatePersonalInfo,
+  addEducation,
   updateEducation,
+  removeEducation,
+  addExperience,
   updateExperience,
-  updateSkills,
-  updateProjects
+  removeExperience,
+  addSkill,
+  updateSkill,
+  removeSkill,
+  addProject,
+  updateProject,
+  removeProject,
 } = resumeSlice.actions;
 
 export default resumeSlice.reducer; 
