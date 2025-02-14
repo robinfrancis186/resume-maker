@@ -14,14 +14,14 @@ import Templates from './pages/Templates';
 // Components
 import Header from './components/layout/Header';
 
-const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!publishableKey) {
-  throw new Error('Missing Publishable Key');
-}
+const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
 
 const ClerkWithRoutes = () => {
   const navigate = useNavigate();
+
+  if (!publishableKey) {
+    console.warn('Clerk publishable key is missing. Authentication features will be disabled.');
+  }
 
   return (
     <ClerkProvider
