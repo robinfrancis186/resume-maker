@@ -13,16 +13,15 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
 import html2pdf from 'html2pdf.js';
-import { RootState, ResumeState } from '../../types';
+import { ResumeState } from '../../types/resume';
 
 interface ResumePreviewProps {
   data: ResumeState;
 }
 
-const ResumePreview: React.FC<ResumePreviewProps> = () => {
-  const resume = useSelector((state: RootState) => state.resume);
+const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
@@ -71,46 +70,46 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
       >
         {/* Header Section */}
         <VStack spacing={2} align="center" mb={6}>
-          <Heading size="xl">{resume.personalInfo.fullName}</Heading>
+          <Heading size="xl">{data.personalInfo.fullName}</Heading>
           <HStack spacing={4} wrap="wrap" justify="center">
-            {resume.personalInfo.email && (
+            {data.personalInfo.email && (
               <HStack>
                 <FaEnvelope />
-                <Text>{resume.personalInfo.email}</Text>
+                <Text>{data.personalInfo.email}</Text>
               </HStack>
             )}
-            {resume.personalInfo.phone && (
+            {data.personalInfo.phone && (
               <HStack>
                 <FaPhone />
-                <Text>{resume.personalInfo.phone}</Text>
+                <Text>{data.personalInfo.phone}</Text>
               </HStack>
             )}
-            {resume.personalInfo.location && (
+            {data.personalInfo.location && (
               <HStack>
                 <FaMapMarkerAlt />
-                <Text>{resume.personalInfo.location}</Text>
+                <Text>{data.personalInfo.location}</Text>
               </HStack>
             )}
           </HStack>
           <HStack spacing={4} wrap="wrap" justify="center">
-            {resume.personalInfo.linkedin && (
-              <Link href={resume.personalInfo.linkedin} isExternal>
+            {data.personalInfo.linkedin && (
+              <Link href={data.personalInfo.linkedin} isExternal>
                 <HStack>
                   <FaLinkedin />
                   <Text>LinkedIn</Text>
                 </HStack>
               </Link>
             )}
-            {resume.personalInfo.github && (
-              <Link href={resume.personalInfo.github} isExternal>
+            {data.personalInfo.github && (
+              <Link href={data.personalInfo.github} isExternal>
                 <HStack>
                   <FaGithub />
                   <Text>GitHub</Text>
                 </HStack>
               </Link>
             )}
-            {resume.personalInfo.portfolio && (
-              <Link href={resume.personalInfo.portfolio} isExternal>
+            {data.personalInfo.portfolio && (
+              <Link href={data.personalInfo.portfolio} isExternal>
                 <HStack>
                   <FaGlobe />
                   <Text>Portfolio</Text>
@@ -121,11 +120,11 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
         </VStack>
 
         {/* Experience Section */}
-        {resume.experience.length > 0 && (
+        {data.experience.length > 0 && (
           <>
             <Heading size="md" mb={4}>Experience</Heading>
             <VStack spacing={4} align="stretch" mb={6}>
-              {resume.experience.map((exp, index) => (
+              {data.experience.map((exp, index) => (
                 <Box key={index}>
                   <HStack justify="space-between" mb={2}>
                     <VStack align="start" spacing={0}>
@@ -139,7 +138,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
                       </Text>
                     </VStack>
                   </HStack>
-                  <Text whiteSpace="pre-line">{exp.description}</Text>
+                  <Text whiteSpace="pre-line">{exp.description.join('\n')}</Text>
                 </Box>
               ))}
             </VStack>
@@ -148,16 +147,16 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
         )}
 
         {/* Education Section */}
-        {resume.education.length > 0 && (
+        {data.education.length > 0 && (
           <>
             <Heading size="md" mb={4}>Education</Heading>
             <VStack spacing={4} align="stretch" mb={6}>
-              {resume.education.map((edu, index) => (
+              {data.education.map((edu, index) => (
                 <Box key={index}>
                   <HStack justify="space-between" mb={2}>
                     <VStack align="start" spacing={0}>
                       <Heading size="sm">{edu.school}</Heading>
-                      <Text fontWeight="bold">{edu.degree}</Text>
+                      <Text fontWeight="bold">{edu.degree} in {edu.fieldOfStudy}</Text>
                     </VStack>
                     <VStack align="end" spacing={0}>
                       <Text>
@@ -174,27 +173,24 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
         )}
 
         {/* Skills Section */}
-        {resume.skills.length > 0 && (
-          <Box>
-            <Heading size="lg" color="blue.600" mb={4}>
-              Skills
-            </Heading>
+        {data.skills.length > 0 && (
+          <Box mb={6}>
+            <Heading size="md" mb={4}>Skills</Heading>
             {Object.entries(
-              resume.skills.reduce<Record<string, string[]>>((acc, skill) => {
-                const category = skill.category;
-                if (!acc[category]) {
-                  acc[category] = [];
+              data.skills.reduce<Record<string, string[]>>((acc, skill) => {
+                if (!acc[skill.category]) {
+                  acc[skill.category] = [];
                 }
-                acc[category].push(skill.name);
+                acc[skill.category].push(skill.name);
                 return acc;
-              }, {} as Record<string, string[]>)
+              }, {})
             ).map(([category, skills]) => (
               <Box key={category} mb={4}>
-                <Heading size="md" color="gray.700" mb={2}>
+                <Heading size="sm" mb={2}>
                   {category}
                 </Heading>
                 <HStack wrap="wrap" spacing={2}>
-                  {skills.map((skill: string) => (
+                  {skills.map((skill) => (
                     <Tag key={skill} colorScheme="blue" size="md">
                       {skill}
                     </Tag>
@@ -206,16 +202,16 @@ const ResumePreview: React.FC<ResumePreviewProps> = () => {
         )}
 
         {/* Projects Section */}
-        {resume.projects.length > 0 && (
+        {data.projects.length > 0 && (
           <>
             <Heading size="md" mb={4}>Projects</Heading>
             <VStack spacing={4} align="stretch">
-              {resume.projects.map((project, index) => (
+              {data.projects.map((project, index) => (
                 <Box key={index}>
                   <HStack justify="space-between" mb={2}>
                     <Heading size="sm">
-                      {project.url ? (
-                        <Link href={project.url} isExternal color="purple.500">
+                      {project.link ? (
+                        <Link href={project.link} isExternal color="purple.500">
                           {project.name}
                         </Link>
                       ) : (

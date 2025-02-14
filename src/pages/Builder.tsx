@@ -1,13 +1,14 @@
+import React, { useState } from 'react';
 import { Box, Grid, useColorModeValue } from '@chakra-ui/react';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import ResumeForm from '../components/form/ResumeForm';
 import ResumePreview from '../components/resume/ResumePreview';
+import { useTypedSelector } from '../hooks/useTypedSelector';
+import { ResumeSection } from '../types/resume';
 
-const Builder = () => {
+const Builder: React.FC = () => {
   const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const [activeSection, setActiveSection] = useState('personal');
-  const resumeData = useSelector((state) => state.resume);
+  const [activeSection, setActiveSection] = useState<ResumeSection>('personal');
+  const resumeData = useTypedSelector((state) => state.resume);
 
   return (
     <Grid

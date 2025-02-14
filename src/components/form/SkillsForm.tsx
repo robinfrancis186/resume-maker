@@ -1,135 +1,117 @@
+import React, { useState, FormEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import {
-  VStack,
+  Box,
+  Button,
   FormControl,
   FormLabel,
   Input,
-  Button,
-  IconButton,
-  Box,
-  Heading,
-  useToast,
-  HStack,
+  VStack,
   Tag,
   TagLabel,
   TagCloseButton,
   Wrap,
   WrapItem,
+  useToast,
 } from '@chakra-ui/react';
-import { useDispatch, useSelector } from 'react-redux';
 import { updateSkills } from '../../store/resumeSlice';
-import { FaPlus } from 'react-icons/fa';
-import { useState } from 'react';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { Skill } from '../../types/resume';
 
-const SkillsForm = () => {
+interface SkillsByCategory {
+  [key: string]: string[];
+}
+
+const SkillsForm: React.FC = () => {
+  const skills = useTypedSelector((state) => state.resume.skills);
   const dispatch = useDispatch();
   const toast = useToast();
-  const skills = useSelector((state) => state.resume.skills);
-  const [skillInput, setSkillInput] = useState('');
-  const [categoryInput, setCategoryInput] = useState('');
-  const [skillsByCategory, setSkillsByCategory] = useState(
-    skills.reduce((acc, skill) => {
-      if (!acc[skill.category]) {
-        acc[skill.category] = [];
-      }
-      acc[skill.category].push(skill.name);
-      return acc;
-    }, {}) || { 'Technical Skills': [] }
-  );
 
-  const handleAddSkill = (e) => {
-    e.preventDefault();
-    if (skillInput.trim() && categoryInput.trim()) {
-      const category = categoryInput.trim();
-      const newSkills = {
-        ...skillsByCategory,
-        [category]: [...(skillsByCategory[category] || []), skillInput.trim()],
-      };
-      setSkillsByCategory(newSkills);
-      setSkillInput('');
-
-      // Convert to array format for Redux store
-      const skillsArray = Object.entries(newSkills).flatMap(([category, skills]) =>
-        skills.map((skill) => ({ category, name: skill }))
-      );
-      dispatch(updateSkills(skillsArray));
-
-      toast({
-        title: 'Skill added',
-        status: 'success',
-        duration: 1000,
-        isClosable: true,
-      });
+  const initialSkillsByCategory = skills.reduce<SkillsByCategory>((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
     }
+    acc[skill.category].push(skill.name);
+    return acc;
+  }, {});
+
+  const [category, setCategory] = useState('');
+  const [skillInput, setSkillInput] = useState('');
+  const [skillsByCategory, setSkillsByCategory] = useState<SkillsByCategory>(initialSkillsByCategory);
+
+  const handleAddSkill = (e: FormEvent) => {
+    e.preventDefault();
+    if (!category || !skillInput) return;
+
+    const skills = skillInput.split(',').map(s => s.trim()).filter(s => s);
+    if (skills.length === 0) return;
+
+    setSkillsByCategory(prev => ({
+      ...prev,
+      [category]: [...(prev[category] || []), ...skills],
+    }));
+
+    setSkillInput('');
   };
 
-  const handleRemoveSkill = (category, skill) => {
-    const newSkills = {
-      ...skillsByCategory,
+  const handleRemoveSkill = (category: string, skill: string) => {
+    setSkillsByCategory(prev => ({
+      ...prev,
       [category]: skillsByCategory[category].filter((s) => s !== skill),
-    };
-    
-    // Remove category if empty
-    if (newSkills[category].length === 0) {
-      delete newSkills[category];
-    }
-    
-    setSkillsByCategory(newSkills);
+    }));
+  };
 
-    // Convert to array format for Redux store
-    const skillsArray = Object.entries(newSkills).flatMap(([category, skills]) =>
-      skills.map((skill) => ({ category, name: skill }))
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const updatedSkills: Skill[] = Object.entries(skillsByCategory).flatMap(
+      ([category, skills]) =>
+        skills.map((skill) => ({ category, name: skill }))
     );
-    dispatch(updateSkills(skillsArray));
+    dispatch(updateSkills(updatedSkills));
+    toast({
+      title: 'Skills updated',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
   };
 
   return (
-    <VStack spacing={6} align="stretch">
-      <form onSubmit={handleAddSkill}>
-        <VStack spacing={4}>
-          <FormControl isRequired>
-            <FormLabel>Category</FormLabel>
-            <Input
-              value={categoryInput}
-              onChange={(e) => setCategoryInput(e.target.value)}
-              placeholder="e.g., Technical Skills, Soft Skills, Languages"
-            />
-          </FormControl>
+    <Box as="form" onSubmit={handleSubmit}>
+      <VStack spacing={4} align="stretch">
+        <Box as="form" onSubmit={handleAddSkill}>
+          <VStack spacing={4}>
+            <FormControl isRequired>
+              <FormLabel>Skill Category</FormLabel>
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g., Programming Languages, Tools, Soft Skills"
+              />
+            </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel>Skill</FormLabel>
-            <Input
-              value={skillInput}
-              onChange={(e) => setSkillInput(e.target.value)}
-              placeholder="e.g., React.js, Project Management, Spanish"
-            />
-          </FormControl>
+            <FormControl isRequired>
+              <FormLabel>Skills (comma-separated)</FormLabel>
+              <Input
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                placeholder="e.g., JavaScript, React, Node.js"
+              />
+            </FormControl>
 
-          <Button
-            type="submit"
-            leftIcon={<FaPlus />}
-            colorScheme="purple"
-            width="full"
-          >
-            Add Skill
-          </Button>
-        </VStack>
-      </form>
+            <Button type="submit" colorScheme="blue">
+              Add Skills
+            </Button>
+          </VStack>
+        </Box>
 
-      <VStack spacing={4} align="stretch" mt={6}>
         {Object.entries(skillsByCategory).map(([category, skills]) => (
           <Box key={category} borderWidth="1px" borderRadius="lg" p={4}>
-            <Heading size="sm" mb={4}>
-              {category}
-            </Heading>
+            <FormLabel>{category}</FormLabel>
             <Wrap spacing={2}>
               {skills.map((skill) => (
                 <WrapItem key={skill}>
-                  <Tag
-                    size="lg"
-                    borderRadius="full"
-                    variant="solid"
-                    colorScheme="purple"
-                  >
+                  <Tag size="lg" colorScheme="primary" borderRadius="full">
                     <TagLabel>{skill}</TagLabel>
                     <TagCloseButton
                       onClick={() => handleRemoveSkill(category, skill)}
@@ -140,8 +122,12 @@ const SkillsForm = () => {
             </Wrap>
           </Box>
         ))}
+
+        <Button type="submit" colorScheme="green">
+          Save Changes
+        </Button>
       </VStack>
-    </VStack>
+    </Box>
   );
 };
 

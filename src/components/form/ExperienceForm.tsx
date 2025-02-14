@@ -1,185 +1,159 @@
+import React, { useState, FormEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import {
-  VStack,
+  Box,
+  Button,
   FormControl,
   FormLabel,
   Input,
-  Button,
-  IconButton,
-  Box,
-  Heading,
-  useToast,
+  VStack,
   HStack,
+  IconButton,
   Textarea,
-  useDisclosure,
+  useToast,
 } from '@chakra-ui/react';
-import { useDispatch, useSelector } from 'react-redux';
+import { DeleteIcon } from '@chakra-ui/icons';
 import { updateExperience } from '../../store/resumeSlice';
-import { FaTrash, FaPlus, FaMagic } from 'react-icons/fa';
-import { useState } from 'react';
-import AIContentGenerator from '../common/AIContentGenerator';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { Experience } from '../../types/resume';
 
-const ExperienceForm = () => {
+interface ExperienceEntry extends Experience {}
+
+const ExperienceForm: React.FC = () => {
+  const experience = useTypedSelector((state) => state.resume.experience);
   const dispatch = useDispatch();
   const toast = useToast();
-  const experience = useSelector((state) => state.resume.experience);
-  const [entries, setEntries] = useState(experience.length > 0 ? experience : [{}]);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [entries, setEntries] = useState<ExperienceEntry[]>(experience);
 
   const handleAddEntry = () => {
-    setEntries([...entries, {}]);
+    setEntries([
+      ...entries,
+      {
+        company: '',
+        position: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        description: []
+      },
+    ]);
   };
 
-  const handleRemoveEntry = (index) => {
+  const handleRemoveEntry = (index: number) => {
     const newEntries = entries.filter((_, i) => i !== index);
     setEntries(newEntries);
-    dispatch(updateExperience(newEntries));
   };
 
-  const handleChange = (index, field, value) => {
+  const handleChange = (index: number, field: keyof ExperienceEntry, value: string | string[]) => {
     const newEntries = [...entries];
-    newEntries[index] = { ...newEntries[index], [field]: value };
+    if (field === 'description' && typeof value === 'string') {
+      newEntries[index] = {
+        ...newEntries[index],
+        description: value.split('\n').filter(line => line.trim() !== '')
+      };
+    } else {
+      newEntries[index] = {
+        ...newEntries[index],
+        [field]: value,
+      };
+    }
     setEntries(newEntries);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     dispatch(updateExperience(entries));
     toast({
-      title: 'Work experience updated',
+      title: 'Experience updated',
       status: 'success',
       duration: 2000,
       isClosable: true,
     });
   };
 
-  const handleGenerateContent = (index) => {
-    setSelectedIndex(index);
-    onOpen();
-  };
-
-  const handleAIGenerated = (content) => {
-    if (selectedIndex !== null) {
-      handleChange(selectedIndex, 'description', content);
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack spacing={6} align="stretch">
+    <Box as="form" onSubmit={handleSubmit}>
+      <VStack spacing={4} align="stretch">
         {entries.map((entry, index) => (
-          <Box
-            key={index}
-            p={4}
-            borderWidth="1px"
-            borderRadius="lg"
-            position="relative"
-          >
-            <HStack justify="space-between" mb={4}>
-              <Heading size="sm">Experience #{index + 1}</Heading>
-              <IconButton
-                icon={<FaTrash />}
-                colorScheme="red"
-                variant="ghost"
-                onClick={() => handleRemoveEntry(index)}
-                aria-label="Remove experience entry"
-              />
-            </HStack>
-
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Company</FormLabel>
-                <Input
-                  value={entry.company || ''}
-                  onChange={(e) => handleChange(index, 'company', e.target.value)}
-                  placeholder="Google"
+          <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
+            <VStack spacing={4} align="stretch">
+              <HStack justify="space-between">
+                <FormControl isRequired>
+                  <FormLabel>Company</FormLabel>
+                  <Input
+                    value={entry.company}
+                    onChange={(e) => handleChange(index, 'company', e.target.value)}
+                    placeholder="Enter company name"
+                  />
+                </FormControl>
+                <IconButton
+                  aria-label="Remove experience"
+                  icon={<DeleteIcon />}
+                  onClick={() => handleRemoveEntry(index)}
+                  colorScheme="red"
                 />
-              </FormControl>
+              </HStack>
 
               <FormControl isRequired>
                 <FormLabel>Position</FormLabel>
                 <Input
-                  value={entry.position || ''}
+                  value={entry.position}
                   onChange={(e) => handleChange(index, 'position', e.target.value)}
-                  placeholder="Senior Software Engineer"
+                  placeholder="Enter job title"
                 />
               </FormControl>
 
-              <HStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Location</FormLabel>
+                <Input
+                  value={entry.location}
+                  onChange={(e) => handleChange(index, 'location', e.target.value)}
+                  placeholder="Enter location"
+                />
+              </FormControl>
+
+              <HStack>
                 <FormControl isRequired>
                   <FormLabel>Start Date</FormLabel>
                   <Input
                     type="month"
-                    value={entry.startDate || ''}
+                    value={entry.startDate}
                     onChange={(e) => handleChange(index, 'startDate', e.target.value)}
                   />
                 </FormControl>
 
-                <FormControl>
+                <FormControl isRequired>
                   <FormLabel>End Date</FormLabel>
                   <Input
                     type="month"
-                    value={entry.endDate || ''}
+                    value={entry.endDate}
                     onChange={(e) => handleChange(index, 'endDate', e.target.value)}
                   />
                 </FormControl>
               </HStack>
 
-              <FormControl>
-                <FormLabel>Location</FormLabel>
-                <Input
-                  value={entry.location || ''}
-                  onChange={(e) => handleChange(index, 'location', e.target.value)}
-                  placeholder="Mountain View, CA"
-                />
-              </FormControl>
-
               <FormControl isRequired>
-                <HStack justify="space-between" align="center">
-                  <FormLabel mb={0}>Description</FormLabel>
-                  <Button
-                    size="sm"
-                    leftIcon={<FaMagic />}
-                    variant="outline"
-                    onClick={() => handleGenerateContent(index)}
-                  >
-                    Generate with AI
-                  </Button>
-                </HStack>
+                <FormLabel>Description</FormLabel>
                 <Textarea
-                  value={entry.description || ''}
+                  value={entry.description.join('\n')}
                   onChange={(e) => handleChange(index, 'description', e.target.value)}
-                  placeholder="• Led a team of 5 engineers in developing a new feature
-• Improved system performance by 50%
-• Implemented CI/CD pipeline"
-                  rows={5}
+                  placeholder="Enter job responsibilities (one per line)"
+                  minH="150px"
                 />
               </FormControl>
             </VStack>
           </Box>
         ))}
 
-        <Button
-          leftIcon={<FaPlus />}
-          onClick={handleAddEntry}
-          variant="ghost"
-        >
+        <Button onClick={handleAddEntry} colorScheme="blue">
           Add Experience
         </Button>
 
-        <Button type="submit">
-          Save Experience
+        <Button type="submit" colorScheme="green">
+          Save Changes
         </Button>
       </VStack>
-
-      <AIContentGenerator
-        isOpen={isOpen}
-        onClose={onClose}
-        onGenerated={handleAIGenerated}
-        type="experience"
-        placeholder="Describe your role, responsibilities, and achievements. For example: Led a team of software engineers at Google, working on the Chrome browser's performance optimization..."
-      />
-    </form>
+    </Box>
   );
 };
 

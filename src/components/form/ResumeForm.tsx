@@ -1,63 +1,70 @@
+import React from 'react';
 import {
-  VStack,
-  Tabs,
-  TabList,
-  TabPanels,
+  Box,
   Tab,
+  TabList,
   TabPanel,
-  useColorModeValue,
+  TabPanels,
+  Tabs,
 } from '@chakra-ui/react';
-import { useDispatch } from 'react-redux';
 import PersonalInfoForm from './PersonalInfoForm';
 import EducationForm from './EducationForm';
 import ExperienceForm from './ExperienceForm';
-import SkillsForm from './SkillsForm';
 import ProjectsForm from './ProjectsForm';
+import SkillsForm from './SkillsForm';
+import { ResumeSection } from '../../types/resume';
 
-const ResumeForm = ({ activeSection, setActiveSection }) => {
-  const dispatch = useDispatch();
-  const tabBg = useColorModeValue('white', 'gray.800');
+interface ResumeFormProps {
+  activeSection: ResumeSection;
+  setActiveSection: (section: ResumeSection) => void;
+}
 
-  const sections = [
-    { name: 'personal', label: 'Personal Info', component: PersonalInfoForm },
-    { name: 'education', label: 'Education', component: EducationForm },
-    { name: 'experience', label: 'Experience', component: ExperienceForm },
-    { name: 'skills', label: 'Skills', component: SkillsForm },
-    { name: 'projects', label: 'Projects', component: ProjectsForm },
-  ];
+const ResumeForm: React.FC<ResumeFormProps> = ({ activeSection, setActiveSection }) => {
+  const handleTabChange = (index: number) => {
+    const sections: ResumeSection[] = ['personal', 'education', 'experience', 'projects', 'skills'];
+    setActiveSection(sections[index]);
+  };
 
-  const handleTabChange = (index) => {
-    setActiveSection(sections[index].name);
+  const getTabIndex = () => {
+    const sections: ResumeSection[] = ['personal', 'education', 'experience', 'projects', 'skills'];
+    return sections.indexOf(activeSection);
   };
 
   return (
-    <VStack spacing={8} align="stretch">
+    <Box>
       <Tabs
-        isFitted
-        variant="enclosed"
-        index={sections.findIndex((s) => s.name === activeSection)}
+        index={getTabIndex()}
         onChange={handleTabChange}
+        variant="enclosed"
+        colorScheme="primary"
       >
-        <TabList mb="1em">
-          {sections.map((section) => (
-            <Tab
-              key={section.name}
-              _selected={{ bg: tabBg, borderBottom: '3px solid', borderColor: 'purple.500' }}
-            >
-              {section.label}
-            </Tab>
-          ))}
+        <TabList>
+          <Tab>Personal Info</Tab>
+          <Tab>Education</Tab>
+          <Tab>Experience</Tab>
+          <Tab>Projects</Tab>
+          <Tab>Skills</Tab>
         </TabList>
 
         <TabPanels>
-          {sections.map((section) => (
-            <TabPanel key={section.name}>
-              <section.component />
-            </TabPanel>
-          ))}
+          <TabPanel>
+            <PersonalInfoForm />
+          </TabPanel>
+          <TabPanel>
+            <EducationForm />
+          </TabPanel>
+          <TabPanel>
+            <ExperienceForm />
+          </TabPanel>
+          <TabPanel>
+            <ProjectsForm />
+          </TabPanel>
+          <TabPanel>
+            <SkillsForm />
+          </TabPanel>
         </TabPanels>
       </Tabs>
-    </VStack>
+    </Box>
   );
 };
 

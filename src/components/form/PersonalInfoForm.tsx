@@ -1,24 +1,35 @@
+import React, { FormEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import {
-  VStack,
+  Box,
+  Button,
   FormControl,
   FormLabel,
   Input,
-  Button,
+  VStack,
   useToast,
 } from '@chakra-ui/react';
-import { useDispatch, useSelector } from 'react-redux';
 import { updatePersonalInfo } from '../../store/resumeSlice';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { PersonalInfo } from '../../types/resume';
 
-const PersonalInfoForm = () => {
+const PersonalInfoForm: React.FC = () => {
+  const personalInfo = useTypedSelector((state) => state.resume.personalInfo);
   const dispatch = useDispatch();
   const toast = useToast();
-  const personalInfo = useSelector((state) => state.resume.personalInfo);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    
+    const formData = new FormData(e.currentTarget);
+    const data: PersonalInfo = {
+      fullName: formData.get('fullName') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      location: formData.get('location') as string,
+      portfolio: formData.get('portfolio') as string,
+      linkedin: formData.get('linkedin') as string,
+      github: formData.get('github') as string,
+    };
     dispatch(updatePersonalInfo(data));
     toast({
       title: 'Personal information updated',
@@ -29,14 +40,14 @@ const PersonalInfoForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <Box as="form" onSubmit={handleSubmit}>
       <VStack spacing={4} align="stretch">
         <FormControl isRequired>
           <FormLabel>Full Name</FormLabel>
           <Input
             name="fullName"
-            placeholder="John Doe"
             defaultValue={personalInfo.fullName}
+            placeholder="John Doe"
           />
         </FormControl>
 
@@ -45,8 +56,8 @@ const PersonalInfoForm = () => {
           <Input
             name="email"
             type="email"
-            placeholder="john@example.com"
             defaultValue={personalInfo.email}
+            placeholder="john@example.com"
           />
         </FormControl>
 
@@ -54,35 +65,18 @@ const PersonalInfoForm = () => {
           <FormLabel>Phone</FormLabel>
           <Input
             name="phone"
-            placeholder="+1 (234) 567-8900"
+            type="tel"
             defaultValue={personalInfo.phone}
+            placeholder="(555) 123-4567"
           />
         </FormControl>
 
-        <FormControl>
+        <FormControl isRequired>
           <FormLabel>Location</FormLabel>
           <Input
             name="location"
-            placeholder="City, Country"
             defaultValue={personalInfo.location}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>LinkedIn</FormLabel>
-          <Input
-            name="linkedin"
-            placeholder="linkedin.com/in/johndoe"
-            defaultValue={personalInfo.linkedin}
-          />
-        </FormControl>
-
-        <FormControl>
-          <FormLabel>GitHub</FormLabel>
-          <Input
-            name="github"
-            placeholder="github.com/johndoe"
-            defaultValue={personalInfo.github}
+            placeholder="San Francisco, CA"
           />
         </FormControl>
 
@@ -90,16 +84,37 @@ const PersonalInfoForm = () => {
           <FormLabel>Portfolio Website</FormLabel>
           <Input
             name="portfolio"
-            placeholder="johndoe.com"
+            type="url"
             defaultValue={personalInfo.portfolio}
+            placeholder="https://portfolio.com"
           />
         </FormControl>
 
-        <Button type="submit" colorScheme="purple" mt={4}>
-          Save Personal Info
+        <FormControl>
+          <FormLabel>LinkedIn Profile</FormLabel>
+          <Input
+            name="linkedin"
+            type="url"
+            defaultValue={personalInfo.linkedin}
+            placeholder="https://linkedin.com/in/johndoe"
+          />
+        </FormControl>
+
+        <FormControl>
+          <FormLabel>GitHub Profile</FormLabel>
+          <Input
+            name="github"
+            type="url"
+            defaultValue={personalInfo.github}
+            placeholder="https://github.com/johndoe"
+          />
+        </FormControl>
+
+        <Button type="submit" colorScheme="green">
+          Save Changes
         </Button>
       </VStack>
-    </form>
+    </Box>
   );
 };
 

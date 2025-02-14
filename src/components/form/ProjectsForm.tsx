@@ -1,67 +1,73 @@
+import React, { useState, FormEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import {
-  VStack,
+  Box,
+  Button,
   FormControl,
   FormLabel,
   Input,
-  Button,
-  IconButton,
-  Box,
-  Heading,
-  useToast,
+  VStack,
   HStack,
-  Textarea,
+  IconButton,
   Tag,
   TagLabel,
   TagCloseButton,
   Wrap,
   WrapItem,
-  useDisclosure,
+  Textarea,
+  useToast,
 } from '@chakra-ui/react';
-import { useDispatch, useSelector } from 'react-redux';
+import { DeleteIcon } from '@chakra-ui/icons';
 import { updateProjects } from '../../store/resumeSlice';
-import { FaTrash, FaPlus, FaMagic } from 'react-icons/fa';
-import { useState } from 'react';
-import AIContentGenerator from '../common/AIContentGenerator';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { Project } from '../../types/resume';
 
-const ProjectsForm = () => {
+interface ProjectEntry extends Project {}
+
+const ProjectsForm: React.FC = () => {
+  const projects = useTypedSelector((state) => state.resume.projects);
   const dispatch = useDispatch();
   const toast = useToast();
-  const projects = useSelector((state) => state.resume.projects);
-  const [entries, setEntries] = useState(projects.length > 0 ? projects : [{}]);
-  const [currentTech, setCurrentTech] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [entries, setEntries] = useState<ProjectEntry[]>(projects);
 
   const handleAddEntry = () => {
-    setEntries([...entries, { technologies: [] }]);
+    setEntries([
+      ...entries,
+      {
+        name: '',
+        description: '',
+        technologies: [],
+        link: '',
+        github: ''
+      },
+    ]);
   };
 
-  const handleRemoveEntry = (index) => {
+  const handleRemoveEntry = (index: number) => {
     const newEntries = entries.filter((_, i) => i !== index);
     setEntries(newEntries);
-    dispatch(updateProjects(newEntries));
   };
 
-  const handleChange = (index, field, value) => {
+  const handleChange = (index: number, field: keyof ProjectEntry, value: string) => {
     const newEntries = [...entries];
-    newEntries[index] = { ...newEntries[index], [field]: value };
+    newEntries[index] = {
+      ...newEntries[index],
+      [field]: value,
+    };
     setEntries(newEntries);
   };
 
-  const handleAddTechnology = (index, tech) => {
-    if (tech.trim()) {
-      const newEntries = [...entries];
-      const technologies = newEntries[index].technologies || [];
-      newEntries[index] = {
-        ...newEntries[index],
-        technologies: [...technologies, tech.trim()],
-      };
-      setEntries(newEntries);
-      setCurrentTech('');
-    }
+  const handleAddTechnology = (index: number, tech: string) => {
+    if (!tech.trim()) return;
+    const newEntries = [...entries];
+    newEntries[index] = {
+      ...newEntries[index],
+      technologies: [...(newEntries[index].technologies || []), tech.trim()],
+    };
+    setEntries(newEntries);
   };
 
-  const handleRemoveTechnology = (index, tech) => {
+  const handleRemoveTechnology = (index: number, tech: string) => {
     const newEntries = [...entries];
     newEntries[index] = {
       ...newEntries[index],
@@ -70,18 +76,7 @@ const ProjectsForm = () => {
     setEntries(newEntries);
   };
 
-  const handleGenerateContent = (index) => {
-    setSelectedIndex(index);
-    onOpen();
-  };
-
-  const handleAIGenerated = (content) => {
-    if (selectedIndex !== null) {
-      handleChange(selectedIndex, 'description', content);
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     dispatch(updateProjects(entries));
     toast({
@@ -93,98 +88,56 @@ const ProjectsForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack spacing={6} align="stretch">
+    <Box as="form" onSubmit={handleSubmit}>
+      <VStack spacing={4} align="stretch">
         {entries.map((entry, index) => (
-          <Box
-            key={index}
-            p={4}
-            borderWidth="1px"
-            borderRadius="lg"
-            position="relative"
-          >
-            <HStack justify="space-between" mb={4}>
-              <Heading size="sm">Project #{index + 1}</Heading>
-              <IconButton
-                icon={<FaTrash />}
-                colorScheme="red"
-                variant="ghost"
-                onClick={() => handleRemoveEntry(index)}
-                aria-label="Remove project entry"
-              />
-            </HStack>
-
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Project Name</FormLabel>
-                <Input
-                  value={entry.name || ''}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
-                  placeholder="E-commerce Platform"
+          <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
+            <VStack spacing={4} align="stretch">
+              <HStack justify="space-between">
+                <FormControl isRequired>
+                  <FormLabel>Project Name</FormLabel>
+                  <Input
+                    value={entry.name}
+                    onChange={(e) => handleChange(index, 'name', e.target.value)}
+                    placeholder="Enter project name"
+                  />
+                </FormControl>
+                <IconButton
+                  aria-label="Remove project"
+                  icon={<DeleteIcon />}
+                  onClick={() => handleRemoveEntry(index)}
+                  colorScheme="red"
                 />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Project URL</FormLabel>
-                <Input
-                  value={entry.url || ''}
-                  onChange={(e) => handleChange(index, 'url', e.target.value)}
-                  placeholder="https://github.com/username/project"
-                />
-              </FormControl>
+              </HStack>
 
               <FormControl isRequired>
-                <HStack justify="space-between" align="center">
-                  <FormLabel mb={0}>Description</FormLabel>
-                  <Button
-                    size="sm"
-                    leftIcon={<FaMagic />}
-                    variant="outline"
-                    onClick={() => handleGenerateContent(index)}
-                  >
-                    Generate with AI
-                  </Button>
-                </HStack>
+                <FormLabel>Description</FormLabel>
                 <Textarea
-                  value={entry.description || ''}
+                  value={entry.description}
                   onChange={(e) => handleChange(index, 'description', e.target.value)}
-                  placeholder="• Developed a full-stack e-commerce platform
-• Implemented secure payment processing
-• Integrated inventory management system"
-                  rows={4}
+                  placeholder="Enter project description"
+                  minH="150px"
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Technologies Used</FormLabel>
+                <FormLabel>Technologies</FormLabel>
                 <HStack>
                   <Input
-                    value={currentTech}
-                    onChange={(e) => setCurrentTech(e.target.value)}
-                    placeholder="React, Node.js, MongoDB"
+                    placeholder="Add technology"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleAddTechnology(index, currentTech);
+                        handleAddTechnology(index, (e.target as HTMLInputElement).value);
+                        (e.target as HTMLInputElement).value = '';
                       }
                     }}
-                  />
-                  <IconButton
-                    icon={<FaPlus />}
-                    colorScheme="purple"
-                    onClick={() => handleAddTechnology(index, currentTech)}
-                    aria-label="Add technology"
                   />
                 </HStack>
                 <Wrap spacing={2} mt={2}>
                   {entry.technologies?.map((tech) => (
                     <WrapItem key={tech}>
-                      <Tag
-                        size="md"
-                        borderRadius="full"
-                        variant="solid"
-                        colorScheme="purple"
-                      >
+                      <Tag size="md" colorScheme="primary" borderRadius="full">
                         <TagLabel>{tech}</TagLabel>
                         <TagCloseButton
                           onClick={() => handleRemoveTechnology(index, tech)}
@@ -194,32 +147,39 @@ const ProjectsForm = () => {
                   ))}
                 </Wrap>
               </FormControl>
+
+              <FormControl>
+                <FormLabel>Live Demo URL</FormLabel>
+                <Input
+                  value={entry.link}
+                  onChange={(e) => handleChange(index, 'link', e.target.value)}
+                  placeholder="https://example.com"
+                  type="url"
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>GitHub URL</FormLabel>
+                <Input
+                  value={entry.github}
+                  onChange={(e) => handleChange(index, 'github', e.target.value)}
+                  placeholder="https://github.com/username/repo"
+                  type="url"
+                />
+              </FormControl>
             </VStack>
           </Box>
         ))}
 
-        <Button
-          leftIcon={<FaPlus />}
-          onClick={handleAddEntry}
-          colorScheme="purple"
-          variant="ghost"
-        >
+        <Button onClick={handleAddEntry} colorScheme="blue">
           Add Project
         </Button>
 
-        <Button type="submit" colorScheme="purple">
-          Save Projects
+        <Button type="submit" colorScheme="green">
+          Save Changes
         </Button>
       </VStack>
-
-      <AIContentGenerator
-        isOpen={isOpen}
-        onClose={onClose}
-        onGenerated={handleAIGenerated}
-        type="project"
-        placeholder="Describe your project, its features, technologies used, and impact. For example: Built a full-stack e-commerce platform using React and Node.js, implementing secure payment processing..."
-      />
-    </form>
+    </Box>
   );
 };
 

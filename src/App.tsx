@@ -42,7 +42,10 @@ function App() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      navigate={(to) => window.location.hash = to.slice(1)}
+      navigate={(to) => {
+        const newPath = to.startsWith('/') ? to.slice(1) : to;
+        window.location.hash = newPath;
+      }}
     >
       <Provider store={store}>
         <ChakraProvider theme={theme}>
@@ -67,10 +70,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="*"
-                element={<Navigate to="/" replace />}
-              />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
         </ChakraProvider>
