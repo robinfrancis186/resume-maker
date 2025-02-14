@@ -1,8 +1,8 @@
+import React from 'react';
 import {
   Box,
   Container,
   SimpleGrid,
-  Image,
   Heading,
   Text,
   Button,
@@ -10,105 +10,110 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setSelectedTemplate } from '../store/store';
+import TemplatePreview from '../components/resume/TemplatePreview';
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-}
-
-const templates: Template[] = [
-  {
-    id: 'modern',
-    name: 'Modern',
-    description: 'Clean and professional design with a modern touch',
-    image: '/templates/modern.png',
-  },
-  {
-    id: 'classic',
-    name: 'Classic',
-    description: 'Traditional resume layout that stands the test of time',
-    image: '/templates/classic.png',
-  },
-  {
-    id: 'creative',
-    name: 'Creative',
-    description: 'Stand out with a unique and creative design',
-    image: '/templates/creative.png',
-  },
-  {
-    id: 'minimal',
-    name: 'Minimal',
-    description: 'Simple and elegant design focusing on content',
-    image: '/templates/minimal.png',
-  },
-];
-
-const Templates = () => {
-  const dispatch = useDispatch();
+const Templates: React.FC = () => {
   const navigate = useNavigate();
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const hoverBg = useColorModeValue('gray.50', 'gray.700');
 
-  const handleSelectTemplate = (templateId: string) => {
-    dispatch(setSelectedTemplate(templateId));
-    navigate('/builder');
-  };
+  const templates = [
+    {
+      id: 'entry-level',
+      name: 'Entry Level',
+      description: 'Perfect for students and recent graduates. Clean and professional layout that highlights education and skills.',
+    },
+    {
+      id: 'classic',
+      name: 'Classic',
+      description: 'Traditional format with a timeless design. Ideal for experienced professionals across industries.',
+    },
+    {
+      id: 'clean-modern',
+      name: 'Clean Modern',
+      description: 'Contemporary design with a focus on clarity and visual hierarchy. Great for tech and creative professionals.',
+    },
+  ];
 
   return (
-    <Box bg={bgColor} minH="calc(100vh - 72px)" py={12}>
-      <Container maxW="container.xl">
-        <VStack spacing={8} mb={12}>
+    <Container maxW="container.xl" py={{ base: 4, md: 8 }} px={{ base: 4, md: 8 }}>
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
+        <Box textAlign="center" px={{ base: 4, md: 0 }}>
           <Heading
-            size="2xl"
-            bgGradient="linear(to-r, blue.400, cyan.400)"
+            size={{ base: "xl", md: "2xl" }}
+            bgGradient="linear(to-r, primary.400, accent.400)"
             bgClip="text"
+            mb={{ base: 2, md: 4 }}
           >
             Choose Your Template
           </Heading>
-          <Text fontSize="xl" color={useColorModeValue('gray.600', 'gray.300')} textAlign="center">
-            Select from our professionally designed templates to create your perfect resume
+          <Text fontSize={{ base: "md", md: "lg" }}>
+            Select a professional template to get started with your resume
           </Text>
-        </VStack>
+        </Box>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+        <SimpleGrid 
+          columns={{ base: 1, lg: 3 }} 
+          spacing={{ base: 6, md: 8 }}
+          px={{ base: 2, md: 0 }}
+        >
           {templates.map((template) => (
             <Box
               key={template.id}
-              bg={cardBg}
+              borderWidth="1px"
+              borderColor={borderColor}
               borderRadius="lg"
               overflow="hidden"
-              boxShadow="md"
-              transition="transform 0.2s"
-              _hover={{ transform: 'translateY(-4px)' }}
+              transition="all 0.2s"
+              _hover={{
+                transform: 'translateY(-4px)',
+                shadow: 'lg',
+                bg: hoverBg,
+              }}
             >
-              <Image
-                src={template.image}
-                alt={template.name}
-                w="full"
-                h="300px"
-                objectFit="cover"
-              />
-              <VStack p={6} align="start" spacing={3}>
-                <Heading size="md">{template.name}</Heading>
-                <Text color={useColorModeValue('gray.600', 'gray.300')}>
+              <Box 
+                height={{ base: "400px", md: "500px" }} 
+                overflowY="auto"
+                sx={{
+                  '&::-webkit-scrollbar': {
+                    width: '4px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    width: '6px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'gray.300',
+                    borderRadius: '24px',
+                  },
+                }}
+              >
+                <TemplatePreview type={template.id as any} />
+              </Box>
+              
+              <Box p={{ base: 4, md: 6 }}>
+                <Heading size="md" mb={{ base: 1, md: 2 }}>
+                  {template.name}
+                </Heading>
+                <Text 
+                  mb={{ base: 3, md: 4 }}
+                  fontSize={{ base: "sm", md: "md" }}
+                >
                   {template.description}
                 </Text>
                 <Button
-                  colorScheme="blue"
-                  onClick={() => handleSelectTemplate(template.id)}
+                  colorScheme="primary"
+                  onClick={() => navigate(`/builder?template=${template.id}`)}
+                  w="full"
+                  size={{ base: "md", md: "lg" }}
                 >
                   Use Template
                 </Button>
-              </VStack>
+              </Box>
             </Box>
           ))}
         </SimpleGrid>
-      </Container>
-    </Box>
+      </VStack>
+    </Container>
   );
 };
 

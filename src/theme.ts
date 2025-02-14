@@ -5,72 +5,126 @@ const config: ThemeConfig = {
   useSystemColorMode: false,
 };
 
+const colors = {
+  primary: {
+    50: '#E6F6FF',
+    100: '#BAE3FF',
+    200: '#7CC4FA',
+    300: '#47A3F3',
+    400: '#2186EB',
+    500: '#0967D2',
+    600: '#0552B5',
+    700: '#03449E',
+    800: '#01337D',
+    900: '#002159',
+  },
+  accent: {
+    50: '#E3F8FF',
+    100: '#B3ECFF',
+    200: '#81DEFD',
+    300: '#5ED0FA',
+    400: '#40C3F7',
+    500: '#2BB0ED',
+    600: '#1992D4',
+    700: '#127FBF',
+    800: '#0B69A3',
+    900: '#035388',
+  },
+  gray: {
+    50: '#F5F7FA',
+    100: '#E4E7EB',
+    200: '#CBD2D9',
+    300: '#9AA5B1',
+    400: '#7B8794',
+    500: '#616E7C',
+    600: '#52606D',
+    700: '#3E4C59',
+    800: '#323F4B',
+    900: '#1F2933',
+  },
+};
+
 const theme = extendTheme({
   config,
-  colors: {
-    brand: {
-      50: '#f7fafc',
-      100: '#edf2f7',
-      200: '#e2e8f0',
-      300: '#cbd5e0',
-      400: '#a0aec0',
-      500: '#718096',
-      600: '#4a5568',
-      700: '#2d3748',
-      800: '#1a202c',
-      900: '#171923',
-    },
-  },
+  colors,
   fonts: {
     heading: 'Inter, sans-serif',
     body: 'Inter, sans-serif',
   },
-  styles: {
-    global: {
-      body: {
-        bg: 'brand.smoke',
-      },
-    },
-  },
   components: {
     Button: {
       defaultProps: {
-        colorScheme: 'blue',
+        colorScheme: 'primary',
       },
       variants: {
-        solid: {
-          bg: 'brand.wine',
+        solid: (props: { colorScheme: string }) => ({
+          bg: `${props.colorScheme}.500`,
           color: 'white',
           _hover: {
-            bg: 'brand.wine',
-            opacity: 0.9,
+            bg: `${props.colorScheme}.600`,
           },
-        },
-        outline: {
-          borderColor: 'brand.wine',
-          color: 'brand.wine',
+          _active: {
+            bg: `${props.colorScheme}.700`,
+          },
+        }),
+        outline: (props: { colorScheme: string }) => ({
+          borderColor: `${props.colorScheme}.500`,
+          color: `${props.colorScheme}.500`,
           _hover: {
-            bg: 'brand.wine',
-            color: 'white',
+            bg: `${props.colorScheme}.50`,
           },
+          _active: {
+            bg: `${props.colorScheme}.100`,
+          },
+        }),
+        ghost: (props: { colorScheme: string }) => ({
+          color: `${props.colorScheme}.500`,
+          _hover: {
+            bg: `${props.colorScheme}.50`,
+          },
+          _active: {
+            bg: `${props.colorScheme}.100`,
+          },
+        }),
+      },
+    },
+    Heading: {
+      baseStyle: {
+        color: 'gray.900',
+        _dark: {
+          color: 'gray.50',
+        },
+      },
+    },
+    Text: {
+      baseStyle: {
+        color: 'gray.800',
+        _dark: {
+          color: 'gray.100',
+        },
+      },
+    },
+    Link: {
+      baseStyle: {
+        color: 'primary.500',
+        _hover: {
+          textDecoration: 'none',
+          color: 'primary.600',
         },
       },
     },
     Tag: {
       defaultProps: {
-        colorScheme: 'brand',
-      },
-      variants: {
-        solid: {
-          bg: 'brand.wine',
-          color: 'white',
-        },
-        outline: {
-          borderColor: 'brand.wine',
-          color: 'brand.wine',
-        },
+        colorScheme: 'primary',
       },
     },
+  },
+  styles: {
+    global: (props: { colorMode: string }) => ({
+      body: {
+        bg: props.colorMode === 'dark' ? 'gray.900' : 'gray.50',
+      },
+    }),
   },
 });
 

@@ -28,8 +28,8 @@ const Logo: React.FC<LogoProps> = ({ size = 'md' }) => {
         position="relative"
         fontSize={sizes[size].fontSize}
         fontWeight="bold"
-        color="blue.600"
-        _dark={{ color: 'blue.300' }}
+        color="primary.500"
+        _dark={{ color: 'primary.300' }}
       >
         <Text as="span">RF</Text>
         <Box
@@ -37,7 +37,8 @@ const Logo: React.FC<LogoProps> = ({ size = 'md' }) => {
           top="-10%"
           right="-20%"
           transform="rotate(45deg)"
-          color="cyan.400"
+          color="accent.400"
+          _dark={{ color: 'accent.300' }}
         >
           <FaFeatherAlt size={sizes[size].iconSize} />
         </Box>
