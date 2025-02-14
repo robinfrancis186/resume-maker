@@ -24,7 +24,7 @@ export function resumeToString(resume: ResumeState): string {
     resume.experience.forEach(exp => {
       sections.push(`\n${exp.position} at ${exp.company}`);
       sections.push(`${exp.startDate} - ${exp.endDate || 'Present'}`);
-      sections.push(exp.description);
+      sections.push(exp.description.join('\n'));
     });
   }
 
@@ -61,7 +61,8 @@ export function resumeToString(resume: ResumeState): string {
     sections.push('\n# PROJECTS');
     resume.projects.forEach(project => {
       sections.push(`\n${project.name}`);
-      if (project.url) sections.push(`URL: ${project.url}`);
+      if (project.link) sections.push(`URL: ${project.link}`);
+      if (project.github) sections.push(`GitHub: ${project.github}`);
       sections.push(project.description);
       sections.push(`Technologies: ${project.technologies.join(', ')}`);
     });
