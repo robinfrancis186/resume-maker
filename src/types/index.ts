@@ -3,9 +3,9 @@ export interface PersonalInfo {
   email: string;
   phone: string;
   location: string;
-  linkedin: string;
-  github: string;
-  portfolio: string;
+  linkedin: string | undefined;
+  github: string | undefined;
+  portfolio: string | undefined;
   summary?: string;
 }
 
@@ -15,6 +15,7 @@ export interface Education {
   startDate: string;
   endDate?: string;
   gpa?: string;
+  fieldOfStudy?: string;
 }
 
 export interface Experience {
@@ -23,7 +24,7 @@ export interface Experience {
   startDate: string;
   endDate?: string;
   location: string;
-  description: string;
+  description: string[];
 }
 
 export interface Skill {
@@ -33,9 +34,10 @@ export interface Skill {
 
 export interface Project {
   name: string;
-  url?: string;
   description: string;
   technologies: string[];
+  link?: string;
+  github?: string;
 }
 
 export interface ResumeState {
@@ -67,4 +69,20 @@ export interface ResumeFormProps {
 
 export interface ResumePreviewProps {
   data: ResumeState;
+}
+
+export interface EducationEntry extends Education {
+  id?: string;
+}
+
+export interface ExperienceEntry extends Experience {
+  id?: string;
+}
+
+export interface ProjectEntry extends Project {
+  id?: string;
+}
+
+export interface SkillEntry extends Skill {
+  id?: string;
 } 
