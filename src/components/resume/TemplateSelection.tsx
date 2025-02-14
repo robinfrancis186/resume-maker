@@ -5,11 +5,11 @@ import {
   VStack,
   Text,
   Button,
-  Image,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useDispatch } from 'react-redux';
-import { setTemplate } from '../../store/resumeSlice';
+import { setTemplate } from '../../store/resumeSlice.ts';
+import ImagePreview from '../common/ImagePreview';
 
 interface TemplateOption {
   id: string;
@@ -62,24 +62,11 @@ const TemplateSelection: React.FC = () => {
           _hover={{ bg: hoverBg }}
           transition="all 0.2s"
         >
-          <Image
+          <ImagePreview
             src={template.image}
             alt={`${template.name} template preview`}
             width="100%"
             height="250px"
-            objectFit="cover"
-            fallback={
-              <Box
-                width="100%"
-                height="250px"
-                bg="gray.100"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text color="gray.500">Loading preview...</Text>
-              </Box>
-            }
           />
           <VStack p={6} spacing={3} align="stretch">
             <Text fontSize="2xl" fontWeight="bold">

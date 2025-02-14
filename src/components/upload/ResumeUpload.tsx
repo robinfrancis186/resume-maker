@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
   Box,
@@ -10,61 +10,115 @@ import {
   Link,
   HStack,
   Spinner,
+  Progress,
+  Image,
+  SimpleGrid,
+  IconButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
-import { FaCloudUploadAlt, FaFileUpload } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaFileUpload, FaTrash } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { parseResume } from '../../services/resumeParser';
-import { importResume } from '../../store/resumeSlice';
+import { importResume } from '../../store/resumeSlice.ts';
+
+interface UploadedFile {
+  file: File;
+  preview: string;
+}
 
 const ResumeUpload: React.FC = () => {
   const dispatch = useDispatch();
   const toast = useToast();
-  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const bgColor = useColorModeValue('gray.50', 'gray.700');
+  const borderColor = useColorModeValue('gray.300', 'gray.600');
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+    const newFiles = acceptedFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setUploadedFiles(prev => [...prev, ...newFiles]);
 
-    setIsProcessing(true);
-    try {
-      const resumeData = await parseResume(file);
-      dispatch(importResume(resumeData));
+    for (const file of acceptedFiles) {
+      setIsProcessing(true);
+      setUploadProgress(0);
       
-      toast({
-        title: 'Resume uploaded successfully',
-        description: 'Your resume content has been extracted and is ready for formatting.',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to process resume',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsProcessing(false);
+      try {
+        // Simulate upload progress
+        const interval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(interval);
+              return prev;
+            }
+            return prev + 10;
+          });
+        }, 200);
+
+        const resumeData = await parseResume(file);
+        dispatch(importResume(resumeData));
+        
+        clearInterval(interval);
+        setUploadProgress(100);
+        
+        toast({
+          title: 'Resume uploaded successfully',
+          description: 'Your resume content has been extracted and is ready for formatting.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } catch (error) {
+        toast({
+          title: 'Upload failed',
+          description: error instanceof Error ? error.message : 'Failed to process resume',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsProcessing(false);
+        setUploadProgress(0);
+      }
     }
   }, [dispatch, toast]);
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => {
+      const newFiles = [...prev];
+      URL.revokeObjectURL(newFiles[index].preview);
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
       'application/json': ['.json'],
+      'image/*': ['.png', '.jpg', '.jpeg']
     },
     maxSize: 200 * 1024 * 1024, // 200MB
-    maxFiles: 1,
     disabled: isProcessing,
   });
+
+  React.useEffect(() => {
+    return () => {
+      // Cleanup previews
+      uploadedFiles.forEach(file => {
+        URL.revokeObjectURL(file.preview);
+      });
+    };
+  }, [uploadedFiles]);
 
   return (
     <VStack spacing={4} width="100%" py={8}>
       <Text fontSize="xl" fontWeight="bold">
-        Upload your resume or any work-related data(PDF, JSON).{' '}
+        Upload your resume or any work-related data.{' '}
         <Link color="blue.400" href="#templates">
           Recommended templates
         </Link>
@@ -75,13 +129,9 @@ const ResumeUpload: React.FC = () => {
         width="100%"
         p={10}
         border="2px dashed"
-        borderColor={isDragActive ? 'blue.400' : 'gray.300'}
+        borderColor={isDragActive ? 'blue.400' : borderColor}
         borderRadius="lg"
-        bg={isDragActive ? 'blue.50' : 'gray.50'}
-        _dark={{
-          bg: isDragActive ? 'blue.900' : 'gray.700',
-          borderColor: isDragActive ? 'blue.400' : 'gray.600',
-        }}
+        bg={bgColor}
         transition="all 0.2s"
         cursor={isProcessing ? 'wait' : 'pointer'}
         _hover={{
@@ -95,8 +145,16 @@ const ResumeUpload: React.FC = () => {
             <>
               <Spinner size="xl" color="blue.400" />
               <Text fontSize="lg" textAlign="center">
-                Processing your resume...
+                Processing your file...
               </Text>
+              <Progress
+                width="100%"
+                value={uploadProgress}
+                size="sm"
+                colorScheme="blue"
+                hasStripe
+                isAnimated
+              />
             </>
           ) : (
             <>
@@ -112,12 +170,56 @@ const ResumeUpload: React.FC = () => {
                   : 'Drag and drop file here'}
               </Text>
               <Text color="gray.500" fontSize="sm">
-                Limit 200MB per file • JSON, PDF
+                Supports PDF, JSON, PNG, JPG • Max 200MB
               </Text>
             </>
           )}
         </VStack>
       </Box>
+
+      {uploadedFiles.length > 0 && (
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} width="100%">
+          {uploadedFiles.map((file, index) => (
+            <Box
+              key={index}
+              borderWidth="1px"
+              borderRadius="lg"
+              overflow="hidden"
+              position="relative"
+            >
+              {file.file.type.startsWith('image/') ? (
+                <Image
+                  src={file.preview}
+                  alt={file.file.name}
+                  width="100%"
+                  height="150px"
+                  objectFit="cover"
+                />
+              ) : (
+                <Box
+                  height="150px"
+                  bg="gray.100"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text>{file.file.name}</Text>
+                </Box>
+              )}
+              <IconButton
+                aria-label="Remove file"
+                icon={<FaTrash />}
+                size="sm"
+                position="absolute"
+                top={2}
+                right={2}
+                colorScheme="red"
+                onClick={() => removeFile(index)}
+              />
+            </Box>
+          ))}
+        </SimpleGrid>
+      )}
 
       <HStack>
         <Button
